@@ -25,14 +25,21 @@ class PDFProcessor:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         chunks = text_splitter.split_text(szoveg)
 
-        #vektorizalas (Embedding)
-        result = self.client.models.embed_content(
-            model="gemini-embedding-001",
-            contents= chunks,
-            config=types.EmbedContentConfig(output_dimensionality=768)
-            )
-        vektorok = [emb.values for emb in result.embeddings]
+        #hosszabb pdf-ek miatt
+        vektorok = []
+        batch_size = 100 #maximum 100
 
+        for i in range(0, len(chunks), batch_size):
+            batch_chunks = chunks[i:i + batch_size]
+            
+            result = self.client.models.embed_content(
+                model="gemini-embedding-001", 
+                contents=batch_chunks,
+                config=types.EmbedContentConfig(output_dimensionality=768)
+            )
+            
+            vektorok.extend([emb.values for emb in result.embeddings])
+            
         #ChromaDB vektorok eltarolasa
         chunk_ids = []
         for x in range(len(chunks)):

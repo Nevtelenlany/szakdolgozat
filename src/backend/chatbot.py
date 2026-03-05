@@ -45,7 +45,7 @@ class Chatbot:
         
         #valasz generalasa
         response = self.client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model="gemini-2.5-flash", #gemini-3-flash-preview
             contents=[f"A kérdés amire válaszolnod kell: {kerdes} és ez alapján kell válaszolnod: {kotnextus_lista}"],
             config=types.GenerateContentConfig(
                 temperature=0.1))

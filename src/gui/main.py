@@ -16,7 +16,7 @@ if __name__ == '__main__':
             super().__init__()
 
             self.setWindowTitle("Szakdolgozat")
-            self.setMinimumSize(400,400)
+            self.setMinimumSize(700,600)
             self.showMaximized()
 
             self.kezdo_kepernyo = HomeScreen()

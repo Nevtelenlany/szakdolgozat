@@ -1,0 +1,54 @@
+/*címsor*/
+QLabel#MainTitle {
+    font-size: 24px; 
+    font-weight: bold; 
+    margin-bottom: 20px;
+    color: #49668C;
+}
+
+/*még nincs témakör szövege*/
+QLabel#EmptyText {
+    font-size: 16px;
+    font-style: italic;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #666666;
+}
+
+/*kilepes és a temakor hozza adas*/
+QPushButton#ActionButton {
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: #7092BE;
+    border: none;
+}
+
+QPushButton#ActionButton:hover {
+    color: #0078D7;
+}
+
+/*temakorok gombja*/
+QPushButton#SubjectButton {
+    background-color: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px; /* Lekerekített sarkok */
+    font-size: 18px;
+    font-weight: bold;
+    color: #49668C;
+}
+
+QPushButton#SubjectButton:hover {
+    border: 2px solid #0078D7;
+    background-color: #f0f8ff; /* Nagyon halvány kék háttér hovernél */
+}
+
+QPushButton#SubjectButton:checked {
+    background-color: #d0e8ff;
+    border: 2px solid #005a9e;
+}
+
+/*görgő*/
+QScrollArea {
+    border: none;
+}

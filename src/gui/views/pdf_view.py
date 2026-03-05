@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QInputDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog
 from backend.pdf_loader import PDFProcessor
 import shutil
 import os
@@ -50,25 +50,18 @@ class pdf_view(QWidget):
 
     def button_push(self):
         #fajl utvonala
-        utvonal, ok = QInputDialog.getText(self, "PDF feltöltése", "Add meg a PDF pontos útvonalát (pl. C:/fajlok/pelda.pdf):")
-        
-        if ok and utvonal:
+        utvonal, _ = QFileDialog.getOpenFileName(self,"PDF kiválasztása", "","PDF fájlok (*.pdf)")
+        if utvonal:
             tiszta_utvonal = utvonal.strip()
+            #fajl nev elmentese
+            fajl_neve = os.path.basename(tiszta_utvonal)
+            cel_utvonal = os.path.join(self.mappa_utvonal, fajl_neve)
+
+            #fajl masolasa
+            shutil.copy(tiszta_utvonal, cel_utvonal)
+
+            # pdf_loader.py meghívása
+            self.pdf_processor.process_and_store(tiszta_utvonal, self.temakor_neve, fajl_neve)
             
-            #Ellenorzes
-            if os.path.exists(tiszta_utvonal) and tiszta_utvonal.lower().endswith(".pdf"):
-                
-                #fajl nev elmentese
-                fajl_neve = os.path.basename(tiszta_utvonal)
-                cel_utvonal = os.path.join(self.mappa_utvonal, fajl_neve)
-
-                #fajl masolasa
-                shutil.copy(tiszta_utvonal, cel_utvonal)
-
-                #pdf_loader.py
-                self.pdf_processor.process_and_store(tiszta_utvonal, self.temakor_neve, fajl_neve)
-                
-                self.frissit_kepernyot()
-                
-            else:
-                print("Hiba: A fájl nem található")
+            # Képernyő frissítése
+            self.frissit_kepernyot()
