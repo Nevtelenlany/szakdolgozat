@@ -7,7 +7,7 @@ QLabel#MainTitle {
 }
 
 /*még nincs témakör szövege*/
-QLabel#EmptyText {
+QLabel#EmptyText, QLabel#EmptyText2 {
     font-size: 16px;
     font-style: italic;
     padding-top: 10px;
@@ -32,7 +32,7 @@ QPushButton#ActionButton:hover {
 QPushButton#SubjectButton {
     background-color: #ffffff;
     border: 2px solid #e0e0e0;
-    border-radius: 10px; /* Lekerekített sarkok */
+    border-radius: 10px; 
     font-size: 18px;
     font-weight: bold;
     color: #49668C;
@@ -40,7 +40,7 @@ QPushButton#SubjectButton {
 
 QPushButton#SubjectButton:hover {
     border: 2px solid #0078D7;
-    background-color: #f0f8ff; /* Nagyon halvány kék háttér hovernél */
+    background-color: #f0f8ff; 
 }
 
 QPushButton#SubjectButton:checked {
@@ -51,4 +51,23 @@ QPushButton#SubjectButton:checked {
 /*görgő*/
 QScrollArea {
     border: none;
+}
+
+QWidget#LeftMenuWidget {
+    background-color: #9fb1c9; 
+    border-right: 1px solid #e4e4e4; 
+}
+
+QPushButton#MenuButton {
+    background-color: transparent;
+    font-size: 20px; 
+    font-weight: bold;
+    color: #ffffff; 
+    text-align: left;
+    padding: 15px 10px 15px 20px;
+    border: none; 
+}
+
+QPushButton#MenuButton:hover {
+    color: #49668C; 
 }
