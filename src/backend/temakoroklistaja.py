@@ -1,10 +1,18 @@
 import os
 import shutil
 
+from backend.pdf_loader import PDFProcessor
+
 class Temakorlista:
-    def __init__(self, base_path="./data/subjects/"):
+    def __init__(self, temakor_neve=None, base_path="./data/subjects/"):
         self.base_path = base_path
         os.makedirs(self.base_path, exist_ok=True)
+        
+        self.temakor_neve = temakor_neve
+        if self.temakor_neve:
+            self.mappa_utvonal = os.path.join(self.base_path, self.temakor_neve, "raw")
+            os.makedirs(self.mappa_utvonal, exist_ok=True)
+            self.pdf_processor = PDFProcessor()
 
     def get_subjects(self):
         return os.listdir(self.base_path)
@@ -36,3 +44,22 @@ class Temakorlista:
             return True, "Sikeres törlés."
         except Exception as e:
             return False, f"Hiba történt a törlés során: {str(e)}"
+        
+
+    def get_files(self):
+        if not self.temakor_neve: return []
+        return os.listdir(self.mappa_utvonal)
+
+    def add_pdf(self, forras_utvonal):
+        if not self.temakor_neve: return
+        fajl_neve = os.path.basename(forras_utvonal)
+        cel_utvonal = os.path.join(self.mappa_utvonal, fajl_neve)
+        shutil.copy(forras_utvonal, cel_utvonal)
+        self.pdf_processor.process_and_store(forras_utvonal, self.temakor_neve, fajl_neve)
+
+    def delete_pdf(self, fajl_nev):
+        if not self.temakor_neve: return
+        fajl_utvonal = os.path.join(self.mappa_utvonal, fajl_nev)
+        if os.path.exists(fajl_utvonal):
+            os.remove(fajl_utvonal)
+        self.pdf_processor.delete_pdf_data(self.temakor_neve, fajl_nev)

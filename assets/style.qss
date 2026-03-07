@@ -13,19 +13,39 @@ QLabel#EmptyText, QLabel#EmptyText2 {
     padding-top: 10px;
     padding-bottom: 10px;
     color: #666666;
+    qproperty-alignment: AlignCenter;
 }
 
-/*kilepes és a temakor hozza adas*/
+/*temakor hozza adas*/
 QPushButton#ActionButton {
     background-color: transparent;
     font-size: 16px;
     font-weight: bold;
     color: #7092BE;
     border: none;
+    outline: none;
+    qproperty-iconSize: 24px 24px;
+    qproperty-icon: url(assets/icons/hozzadas_gomb.png);
 }
 
-QPushButton#ActionButton:hover {
+/*kilepes*/
+QPushButton#ActionButton2 {
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: #7092BE;
+    border: none;
+    outline: none;
+}
+
+/* Hover effekt */
+QPushButton#ActionButton:hover, QPushButton#ActionButton2:hover {
     color: #0078D7;
+}
+
+/* Kattintás effekt*/
+QPushButton#ActionButton:pressed, QPushButton#ActionButton2:pressed {
+    color: #005a9e; 
 }
 
 /*temakorok gombja*/
@@ -70,4 +90,44 @@ QPushButton#MenuButton {
 
 QPushButton#MenuButton:hover {
     color: #49668C; 
+}
+
+/* Táblázat alapstílusa*/
+QTableWidget {
+    background-color: transparent; 
+    color: #e0e0e0;
+    border: none;
+    qproperty-alternatingRowColors: true; 
+
+    font-size: 16px;
+    font-style: italic;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Táblázat fejléce */
+QHeaderView::section {
+    background-color: transparent;
+    color: #49668C; 
+    border: none;
+    border-bottom: 2px solid #555555;
+    font-weight: bold;
+    padding-left: 5px; 
+}
+
+/* Táblázat cellái*/
+QTableWidget::item {
+    background-color: #7092BE; 
+    border: none;
+    padding-left: 5px; 
+}
+
+/* Táblázat cellái*/
+QTableWidget::item:alternate {
+    background-color: #9fb1c9; 
+}
+
+QTableWidget QWidget {
+    background-color: transparent;
+    color: #e0e0e0; 
 }

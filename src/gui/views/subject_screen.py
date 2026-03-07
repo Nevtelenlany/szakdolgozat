@@ -8,8 +8,6 @@ from views.chatbot_view import chatbot_view
 from views.quiz_generator_view import quiz_generator_view
 from backend.temakoroklistaja import Temakorlista
 
-#témakör törlése gomb
-#témakör nevének a modosítása
 class Subject_screen(QWidget):
 
     vissza_fomenube = pyqtSignal()

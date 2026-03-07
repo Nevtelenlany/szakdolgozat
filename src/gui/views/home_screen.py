@@ -106,7 +106,7 @@ class HomeScreen(QWidget):
         also_gombok_layout.addWidget(self.uj_gomb)
         
         self.kilepes_gomb = QPushButton("Kilépés")
-        self.kilepes_gomb.setObjectName("ActionButton")
+        self.kilepes_gomb.setObjectName("ActionButton2")
         self.kilepes_gomb.clicked.connect(QApplication.instance().quit)
         also_gombok_layout.addWidget(self.kilepes_gomb)
 

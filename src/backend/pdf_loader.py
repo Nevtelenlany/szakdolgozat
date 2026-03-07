@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 import os
 import chromadb
-from backend.db_worker import hatter_mentes
+from backend.db_worker import hatter_mentes, hatter_torles
 import multiprocessing
 
 class PDFProcessor:
@@ -53,3 +53,12 @@ class PDFProcessor:
             args=(db_path, chunk_ids, vektorok, chunks)#ezeket az argumentumokat varja a függvény
         )
         mentes_process.start()
+
+    def delete_pdf_data(self, temakor_neve, fajl_neve):
+        db_path = f"./data/subjects/{temakor_neve}/chroma_db"
+        if os.path.exists(db_path):
+            torles_process = multiprocessing.Process(
+                target=hatter_torles,
+                args=(db_path, fajl_neve)
+            )
+            torles_process.start()

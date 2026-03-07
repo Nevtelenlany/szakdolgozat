@@ -29,3 +29,19 @@ def hatter_kereses(db_path, vektorok, queue):
     
     #eredmény vissza kuldese
     queue.put({"status": "ok", "kontextus": kontextus})
+
+def hatter_torles(db_path, fajl_neve):
+    #ChromaDB inicializálása
+    klien = chromadb.PersistentClient(path=db_path, settings=Settings(anonymized_telemetry=False))
+    
+    try:
+        #lekerjuk a kollekciot 
+        kollekcio = klien.get_collection(name="my-collection")
+        #lkerjuk az adatbazisban levo osszes adat azonositojat
+        minden_adat = kollekcio.get()
+        torlendo_id_k = [uid for uid in minden_adat['ids'] if uid.startswith(f"{fajl_neve}_chunk_")]
+        if torlendo_id_k:
+            kollekcio.delete(ids=torlendo_id_k)
+
+    except ValueError:
+        pass
