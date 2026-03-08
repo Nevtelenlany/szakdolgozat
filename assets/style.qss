@@ -198,3 +198,195 @@ QLabel#BotBubble {
     padding-top: 10px;
     padding-bottom: 10px;
 }
+/*Kvíz generálása*/
+
+QLabel#InfoLabel {
+    color: #49668C;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Fő gombok (Generálás és Kiértékelés) */
+QPushButton#GenerateButton {
+    padding: 10px; 
+    background-color: #49668C; 
+    color: white; 
+    font-weight: bold; 
+    font-size: 14px; 
+    border-radius: 5px;
+    border: none;
+}
+QPushButton#GenerateButton:hover { background-color: #9fb1c9; }
+QPushButton#GenerateButton:disabled { background-color: #7092BE; }
+
+QPushButton#SubmitButton {
+    padding: 12px; 
+    background-color: #7092BE;
+    color: white; 
+    font-weight: bold; 
+    font-size: 16px; 
+    border-radius: 5px; 
+    border: none;
+    margin-top: 10px;
+}
+QPushButton#SubmitButton:hover { background-color: #49668C; }
+QPushButton#SubmitButton:disabled { background-color: #a0c4e8; }
+
+QScrollArea#QuizScrollArea {
+    border: 1px solid #e4e4e4; 
+    background-color: #f5f5f5; 
+    border-radius: 5px;
+}
+QWidget#QuizContentWidget {
+    background-color: transparent;
+}
+
+QFrame#QuestionFrame {
+    background-color: white; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    margin-bottom: 10px; 
+    padding: 15px;
+}
+
+/* Kérdések szövege */
+QLabel#QuestionText {
+    font-size: 16px; 
+    border: none;
+    color: #333333;
+}
+
+QRadioButton, QCheckBox {
+    font-size: 14px; 
+    padding: 5px;
+}
+QLineEdit#ShortAnswerInput {
+    font-size: 14px; 
+    border: 1px solid #ccc; 
+    padding: 5px; 
+    border-radius: 4px;
+}
+QComboBox#MatchingCombo, QComboBox#OrderingCombo {
+    font-size: 14px; 
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+*[feedback="correct"] {
+    color: green;
+    font-weight: bold;
+}
+*[feedback="wrong"] {
+    color: red;
+    font-weight: bold;
+    text-decoration: line-through; /* Áthúzás a rádiógomboknál/checkboxoknál */
+}
+
+QLineEdit[feedback="correct"], QComboBox[feedback="correct"] {
+    border: 2px solid green; 
+    background-color: #e8f5e9;
+    color: black; /* Hogy a szöveg olvasható maradjon */
+    text-decoration: none;
+}
+QLineEdit[feedback="wrong"], QComboBox[feedback="wrong"] {
+    border: 2px solid red; 
+    background-color: #ffebee;
+    color: black;
+    text-decoration: none;
+}
+
+/*pdf valaszto legordulo menu*/
+/*maga a doboz*/
+QComboBox#PdfSelector {
+    background-color: #F0F4F8;
+    color: #666666;
+    font-size: 16px;
+    font-style: italic;
+    padding: 6px 12px;
+    border: 1px solid #A9B8C9;
+    border-radius: 6px;
+}
+
+QComboBox#PdfSelector:hover {
+    background-color: #E6EDF5;
+    border: 1px solid #7092BE; 
+}
+
+/*a lenyilo lista*/
+QComboBox#PdfSelector QAbstractItemView {
+    background-color: #ffffff;
+    color: #666666;
+    font-size: 16px;
+    font-style: italic;
+    selection-background-color: #7092BE;
+    selection-color: white;
+    border: 1px solid #A9B8C9;
+    border-radius: 4px;
+    outline: none;
+}
+
+QSlider#QuizSlider::groove:horizontal {
+    border-radius: 4px;
+    height: 8px; /* A sáv vastagsága */
+    background: #E6EDF5;
+}
+
+QSlider#QuizSlider::sub-page:horizontal {
+    background: #7092BE; 
+    border-radius: 4px;
+}
+
+QSlider#QuizSlider::handle:horizontal {
+    background: #49668C; 
+    width: 16px;
+    height: 16px;
+    margin: -4px 0;
+    border-radius: 8px; 
+}
+
+/* A gomb hover effektje */
+QSlider#QuizSlider::handle:horizontal:hover {
+    background: #7092BE;
+    border: 2px solid #49668C;
+}
+
+QSpinBox#SliderValueBadge {
+    font-weight: bold; 
+    font-size: 14px;
+    color: #49668C;
+    background-color: #ffffff;
+    border: 2px solid #7092BE;
+    border-radius: 6px;
+    padding: 2px 8px;
+    min-width: 25px; 
+}
+
+QSpinBox#SliderValueBadge:hover, QSpinBox#SliderValueBadge:focus {
+    border: 2px solid #49668C;
+    background-color: #F0F4F8;
+}
+
+
+QLabel#EredmenyCimke {
+    font-size: 18px;
+    font-weight: bold;
+}
+QLabel#EredmenyCimke[kategoria="tokeletes"] {
+    color: #5cb85c;
+}
+QLabel#EredmenyCimke[kategoria="kozepes"] {
+    color: #f0ad4e;
+}
+QLabel#EredmenyCimke[kategoria="rossz"] {
+    color: #d9534f;
+}
+
+QPushButton[feedback="correct"], QCheckBox[feedback="correct"], QRadioButton[feedback="correct"] {
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+}
+QPushButton[feedback="wrong"], QCheckBox[feedback="wrong"], QRadioButton[feedback="wrong"] {
+    background-color: #f8d7da;
+    border: 1px solid #dc3545;
+}
