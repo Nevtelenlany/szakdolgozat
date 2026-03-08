@@ -1,4 +1,3 @@
-import os
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QPushButton, QLineEdit, QScrollArea, QSizePolicy
@@ -6,19 +5,21 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
 
 from backend.chatbot import Chatbot
+from backend.temakoroklistaja import Temakorlista
 
 class chatbot_view(QWidget):
     def __init__(self, temakor_neve):
         super().__init__()
         self.temakor_neve = temakor_neve
-        self.mappa_utvonal = f"./data/subjects/{temakor_neve}/chroma_db/"
+
+        #peldanyositas
+        self.backend = Temakorlista(temakor_neve=self.temakor_neve)
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
         self.hiba_cimke = QLabel("Nincs PDF feltöltve. Tölts fel egyet, mielőtt beszélgetést indítanál!")
-        self.hiba_cimke.setStyleSheet("color: red; font-size: 16px; font-weight: bold;")
-        self.hiba_cimke.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.hiba_cimke.setObjectName("EmptyText2")
         self.hiba_cimke.hide()
         self.main_layout.addWidget(self.hiba_cimke)
 
@@ -28,45 +29,40 @@ class chatbot_view(QWidget):
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setStyleSheet("border: none; background-color: #f5f5f5;")
 
         self.messages_widget = QWidget()
+        self.messages_widget.setObjectName("MessagesWidget")
         self.messages_layout = QVBoxLayout(self.messages_widget)
         self.messages_layout.setAlignment(Qt.AlignmentFlag.AlignTop) 
-
         self.messages_layout.setSpacing(15) 
-        self.messages_layout.setContentsMargins(10, 10, 10, 10) 
+        self.messages_layout.setContentsMargins(10, 10, 10, 10)
 
         self.scroll_area.setWidget(self.messages_widget)        
-
         self.chat_layout.addWidget(self.scroll_area)
 
         self.input_layout = QHBoxLayout()
         
         self.message_input = QLineEdit()
+        self.message_input.setObjectName("MessageInput")
         self.message_input.setPlaceholderText("Írd ide a kérdésed...")
-        self.message_input.setStyleSheet("padding: 10px; border-radius: 15px; border: 1px solid #ccc;")
-        self.message_input.returnPressed.connect(self.send_message) 
+        self.message_input.returnPressed.connect(self.send_message)
         
         self.send_btn = QPushButton("Küldés")
-        self.send_btn.setStyleSheet("padding: 10px 20px; background-color: #0078D7; color: white; border-radius: 15px; font-weight: bold;")
+        self.send_btn.setObjectName("SendButton")
+
         self.send_btn.clicked.connect(self.send_message)
 
         self.input_layout.addWidget(self.message_input)
         self.input_layout.addWidget(self.send_btn)
         
         self.chat_layout.addLayout(self.input_layout)
-        
         self.main_layout.addWidget(self.chat_container)
 
-
     def showEvent(self, event):
-        """Amikor átkattintunk erre a fülre, ellenőrzi, hogy van-e már adatbázis."""
+        #Amikor átkattintunk erre a fülre, ellenőrzi, hogy van-e már adatbázis
         super().showEvent(event)
         
-        db_fajl_utvonal = os.path.join(self.mappa_utvonal, "chroma.sqlite3")
-
-        if not os.path.exists(db_fajl_utvonal): 
+        if not self.backend.has_active_db():
 
             self.hiba_cimke.show()
             self.chat_container.hide()
@@ -78,13 +74,11 @@ class chatbot_view(QWidget):
             if self.messages_layout.count() == 0:
                 self.add_message(f"Szia! Miben segíthetek?", is_user=False)
 
-
     def send_message(self):
         """Az input mezőből kiolvassa a szöveget, és elindítja a futárt."""
         szoveg = self.message_input.text().strip()
         if not szoveg:
             return
-            
 
         self.add_message(szoveg, is_user=True)
         self.message_input.clear()
@@ -93,11 +87,11 @@ class chatbot_view(QWidget):
         self.message_input.setEnabled(False)
         
         self.gondolkodik_szoveg = QLabel("A Gemini keresi a választ a PDF-ben...")
-        self.gondolkodik_szoveg.setStyleSheet("color: gray; font-style: italic;")
+        self.gondolkodik_szoveg.setObjectName("ThinkingLabel")
         self.messages_layout.addWidget(self.gondolkodik_szoveg)
         QTimer.singleShot(10, self.scroll_to_bottom)
 
-        self.futar = FutarSzal(kerdes=szoveg, db_path=self.mappa_utvonal)
+        self.futar = FutarSzal(kerdes=szoveg, backend=self.backend)
         self.futar.valasz_megerkezett.connect(self.valasz_megjelenitese)
         self.futar.hiba_torent.connect(self.hiba_megjelenitese)
         self.futar.start()
@@ -132,31 +126,15 @@ class chatbot_view(QWidget):
         szoveg_doboz.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         
         if is_user:
-            szoveg_doboz.setStyleSheet("""
-                background-color: #dcf8c6; 
-                padding: 12px; 
-                border-radius: 12px; 
-                font-size: 14px;
-            """)
-
+            szoveg_doboz.setObjectName("UserBubble") 
             sor_layout.addStretch()
             sor_layout.addWidget(szoveg_doboz)
-            
-        else:
-            szoveg_doboz.setStyleSheet("""
-                background-color: #ffffff; 
-                padding: 12px; 
-                border-radius: 12px; 
-                font-size: 14px;
-                border: 1px solid #cccccc;
-            """)
-
-            sor_layout.addWidget(szoveg_doboz)
-            sor_layout.addStretch()
-            
-        if is_user:
             max_szelesseg = int(self.scroll_area.width() * 0.75)
+            
         else:
+            szoveg_doboz.setObjectName("BotBubble")
+            sor_layout.addWidget(szoveg_doboz)
+            sor_layout.addStretch()
             max_szelesseg = int(self.scroll_area.width() * 0.90)
 
         if max_szelesseg > 0:
@@ -176,14 +154,15 @@ class FutarSzal(QThread):
     valasz_megerkezett = pyqtSignal(str)
     hiba_torent = pyqtSignal(str)
 
-    def __init__(self, kerdes, db_path):
+    def __init__(self, kerdes, backend):
         super().__init__()
         self.kerdes = kerdes
-        self.db_path = db_path
+        self.backend = backend
 
     def run(self):
         try:
-            bot = Chatbot(db_path=self.db_path)
+            db_path = self.backend.get_chroma_db_path()
+            bot = Chatbot(db_path=db_path)
             valasz = bot.kerdes_feltevese(self.kerdes)
             self.valasz_megerkezett.emit(valasz)
         except Exception as e:

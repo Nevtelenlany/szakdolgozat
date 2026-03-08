@@ -6,8 +6,6 @@ from functools import partial
 
 from backend.temakoroklistaja import Temakorlista
 
-#valami szebb kinézet alkotása
-
 class pdf_view(QWidget):
     def __init__(self, temakor_neve):
         super().__init__()
@@ -64,7 +62,6 @@ class pdf_view(QWidget):
                 
                 #torles gomb
                 torles_gomb = QPushButton("Törlés")
-                torles_gomb.setObjectName("DeleteButton")
                 torles_gomb.clicked.connect(partial(self.torol_pdf, fajl_nev))
                 tablazat.setCellWidget(sor_index, 1, torles_gomb)
                 

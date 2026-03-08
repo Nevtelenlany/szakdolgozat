@@ -63,3 +63,18 @@ class Temakorlista:
         if os.path.exists(fajl_utvonal):
             os.remove(fajl_utvonal)
         self.pdf_processor.delete_pdf_data(self.temakor_neve, fajl_nev)
+
+    def get_chroma_db_path(self):
+        """Visszaadja a ChromaDB elérési útját az aktuális témakörhöz."""
+        if not self.temakor_neve:
+            return None
+        return os.path.join(self.base_path, self.temakor_neve, "chroma_db")
+
+    def has_active_db(self):
+        """Ellenőrzi, hogy létezik-e az adatbázis a témakörhöz."""
+        db_path = self.get_chroma_db_path()
+        if not db_path:
+            return False
+        
+        db_file = os.path.join(db_path, "chroma.sqlite3")
+        return os.path.exists(db_file)
