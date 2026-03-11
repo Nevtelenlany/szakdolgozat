@@ -46,7 +46,16 @@ class Chatbot:
         #valasz generalasa
         response = self.client.models.generate_content(
             model="gemini-2.5-flash", #gemini-3-flash-preview
-            contents=[f"A kérdés amire válaszolnod kell: {kerdes} és ez alapján kell válaszolnod: {kotnextus_lista}"],
-            config=types.GenerateContentConfig(
-                temperature=0.1))
+            contents=[f"""
+                        A kérdés, amire válaszolnod kell: {kerdes}
+
+                        Itt van a tananyag releváns része, ami alapján válaszolnod kell. Mindegyik részlet felett ott van a [Forrás: fájlnév.pdf] megjelölés:
+                        {kotnextus_lista}
+
+                        SZABÁLYOK:
+                        1. A válaszod megfogalmazásakor KÖTELEZŐ hivatkoznod a forrás(ok)ra!
+                        2. A mondatok vagy a válaszod végén zárójelben tüntesd fel a forrásfájl nevét.
+                        3. Ha a fenti kontextus üres, vagy nem tartalmazza a választ a kérdésre, akkor írd le, hogy a feltöltött tananyagban nem találtál erre releváns részt (ne találj ki információkat a kontextuson kívülről).
+                        """],
+            config=types.GenerateContentConfig(temperature=0.1))
         return response.text

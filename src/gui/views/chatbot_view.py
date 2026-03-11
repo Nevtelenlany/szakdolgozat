@@ -18,11 +18,6 @@ class chatbot_view(QWidget):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.hiba_cimke = QLabel("Nincs PDF feltöltve. Tölts fel egyet, mielőtt beszélgetést indítanál!")
-        self.hiba_cimke.setObjectName("EmptyText2")
-        self.hiba_cimke.hide()
-        self.main_layout.addWidget(self.hiba_cimke)
-
         self.chat_container = QWidget()
         self.chat_layout = QVBoxLayout(self.chat_container)
         self.chat_layout.setContentsMargins(0, 0, 0, 0)
@@ -59,20 +54,9 @@ class chatbot_view(QWidget):
         self.main_layout.addWidget(self.chat_container)
 
     def showEvent(self, event):
-        #Amikor átkattintunk erre a fülre, ellenőrzi, hogy van-e már adatbázis
-        super().showEvent(event)
-        
-        if not self.backend.has_active_db():
-
-            self.hiba_cimke.show()
-            self.chat_container.hide()
-        else:
-
-            self.hiba_cimke.hide()
-            self.chat_container.show()
-            
-            if self.messages_layout.count() == 0:
-                self.add_message(f"Szia! Miben segíthetek?", is_user=False)
+        self.chat_container.show()
+        if self.messages_layout.count() == 0:
+            self.add_message(f"Szia! Miben segíthetek?", is_user=False)
 
     def send_message(self):
         """Az input mezőből kiolvassa a szöveget, és elindítja a futárt."""

@@ -42,15 +42,17 @@ class PDFProcessor:
             
         #ChromaDB vektorok eltarolasa
         chunk_ids = []
+        metaadatok = []
         for x in range(len(chunks)):
             chunk_ids.append(f"{fajl_neve}_chunk_{x}") 
+            metaadatok.append({"forras": fajl_neve})
         
         db_path = f"./data/subjects/{temakor_neve}/chroma_db"
         os.makedirs(db_path, exist_ok=True)
 
         mentes_process = multiprocessing.Process( #folyamat deffinialasa
             target=hatter_mentes, #ezt a függvényt kell lefuttatnia a független folyamatban
-            args=(db_path, chunk_ids, vektorok, chunks)#ezeket az argumentumokat varja a függvény
+            args=(db_path, chunk_ids, vektorok, chunks, metaadatok)#ezeket az argumentumokat varja a függvény
         )
         mentes_process.start()
 

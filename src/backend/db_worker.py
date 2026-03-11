@@ -3,7 +3,7 @@ from chromadb.config import Settings
 
 #yQt6 vagy GUI import mentes övezet
 
-def hatter_mentes(db_path, chunk_ids, vektorok, chunks):
+def hatter_mentes(db_path, chunk_ids, vektorok, chunks, metaadatok):
     #ChromaDB inicializalasa
     klien = chromadb.PersistentClient(path=db_path, settings=Settings(anonymized_telemetry=False))
     
@@ -14,7 +14,8 @@ def hatter_mentes(db_path, chunk_ids, vektorok, chunks):
     kollekcio.add(
         ids=chunk_ids, #stringet var
         embeddings=vektorok,
-        documents=chunks
+        documents=chunks,
+        metadatas=metaadatok
     )
 
 def hatter_kereses(db_path, vektorok, queue):
@@ -25,7 +26,13 @@ def hatter_kereses(db_path, vektorok, queue):
         query_embeddings=vektorok,
         n_results=3)
     
-    kontextus = "\n\n".join(eredmeny['documents'][0])
+    kontextus_lista = []
+    
+    for doc, meta in zip(eredmeny['documents'][0], eredmeny['metadatas'][0]):
+        forras_nev = meta.get("forras", "Ismeretlen forrás")
+        kontextus_lista.append(f"[Forrás: {forras_nev}]\n{doc}")
+        
+    kontextus = "\n\n---\n\n".join(kontextus_lista)
     
     #eredmény vissza kuldese
     queue.put({"status": "ok", "kontextus": kontextus})
