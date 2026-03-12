@@ -189,6 +189,7 @@ class quiz_generator_view(QWidget):
             
             tipus = vezerlo_adat["tipus"]
             feedback = eredmeny["feedback"]
+            kerdes_layout = vezerlo_adat["layout"]
 
             if tipus == "single_choice":
                 helyes_valasz = feedback["correct_answer"]
@@ -237,6 +238,13 @@ class quiz_generator_view(QWidget):
                         self.set_feedback_style(combo, "wrong")
                         if combo.currentText() != "--- Melyik jön ide? ---":
                             combo.setItemText(combo.currentIndex(), f"Rossz! Ide ez jött volna: {helyes_elem}")
+
+            if not eredmeny["helyes"]:
+                magyarazat_szoveg = feedback.get("explanation", "")
+                magyarazat_cimke = QLabel(f"<b>Magyarázat:</b> {magyarazat_szoveg}")
+                magyarazat_cimke.setObjectName("EmptyText2")
+                magyarazat_cimke.setWordWrap(True)
+                kerdes_layout.addWidget(magyarazat_cimke)
 
     def eredmeny_megjelenitese(self, elert_pont, ossz_pont):
         kategoria, szoveg, szazalek = QuizEvaluator.get_evaluation_summary(elert_pont, ossz_pont)
@@ -328,7 +336,7 @@ class quiz_generator_view(QWidget):
                     kerdes_layout.addWidget(radio_btn)
                     gomb_csoport.addButton(radio_btn)
                     gomb_lista.append(radio_btn)
-                self.valasz_vezerlok[kerdes_id] = {"tipus": "single_choice", "gombok": gomb_lista}
+                self.valasz_vezerlok[kerdes_id] = {"tipus": "single_choice", "gombok": gomb_lista, "layout": kerdes_layout}
 
             elif tipus == "multiple_choice":
                 checkbox_lista = []
@@ -336,14 +344,14 @@ class quiz_generator_view(QWidget):
                     chk_btn = QCheckBox(opcio)
                     kerdes_layout.addWidget(chk_btn)
                     checkbox_lista.append(chk_btn)
-                self.valasz_vezerlok[kerdes_id] = {"tipus": "multiple_choice", "dobozok": checkbox_lista}
+                self.valasz_vezerlok[kerdes_id] = {"tipus": "multiple_choice", "dobozok": checkbox_lista, "layout": kerdes_layout}
                 
             elif tipus == "short_answer":
                 beviteli_mezo = QLineEdit()
                 beviteli_mezo.setObjectName("ShortAnswerInput")
                 beviteli_mezo.setPlaceholderText("Írd ide a választ...")
                 kerdes_layout.addWidget(beviteli_mezo)
-                self.valasz_vezerlok[kerdes_id] = {"tipus": "short_answer", "mezo": beviteli_mezo}
+                self.valasz_vezerlok[kerdes_id] = {"tipus": "short_answer", "mezo": beviteli_mezo, "layout": kerdes_layout}
                 
             elif tipus == "matching":
                 parok = kerdes_adat.get("pairs", {})
@@ -362,7 +370,7 @@ class quiz_generator_view(QWidget):
                     sor_layout.addWidget(combo)
                     kerdes_layout.addLayout(sor_layout)
                     sorok_lista.append({"bal_szoveg": bal_szo, "combo": combo})
-                self.valasz_vezerlok[kerdes_id] = {"tipus": "matching", "sorok": sorok_lista}
+                self.valasz_vezerlok[kerdes_id] = {"tipus": "matching", "sorok": sorok_lista, "layout": kerdes_layout}
 
             elif tipus == "ordering":
                 helyes_sorrend = kerdes_adat.get("ordered_items", [])
@@ -380,7 +388,7 @@ class quiz_generator_view(QWidget):
                     sor_layout.addWidget(combo)
                     kerdes_layout.addLayout(sor_layout)
                     combo_lista.append(combo)
-                self.valasz_vezerlok[kerdes_id] = {"tipus": "ordering", "combok": combo_lista}
+                self.valasz_vezerlok[kerdes_id] = {"tipus": "ordering", "combok": combo_lista, "layout": kerdes_layout}
             else:
                 hibajel = QLabel(f"<i>(Ismeretlen feladattípus: '{tipus}')</i>")
                 kerdes_layout.addWidget(hibajel)

@@ -116,6 +116,7 @@ class quiz_generator:
             "question": "Kérdés szövege...",
             "options": ["Rossz 1", "Helyes", "Rossz 2", "Rossz 3"],
             "correct_answer": "Helyes",
+            "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
             "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
@@ -124,6 +125,7 @@ class quiz_generator:
             "question": "Melyek igazak?",
             "options": ["A", "B", "C", "D"],
             "correct_answers": ["A", "C"],
+            "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
             "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
@@ -134,6 +136,7 @@ class quiz_generator:
               "Bal 1": "Jobb 1",
               "Bal 2": "Jobb 2"
             }},
+            "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
             "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
@@ -141,6 +144,7 @@ class quiz_generator:
             "type": "ordering",
             "instruction": "Tedd sorrendbe!",
             "ordered_items": ["Első", "Második", "Harmadik"],
+            "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
             "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
@@ -148,6 +152,7 @@ class quiz_generator:
             "type": "short_answer",
             "question": "Mi a neve...?",
             "accepted_keywords": ["kulcsszó1", "kulcsszó2"],
+            "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
             "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }}
         ]

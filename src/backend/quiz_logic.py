@@ -19,10 +19,11 @@ class QuizEvaluator:
             k_id = kerdes_adat.get("id")
             tipus = kerdes_adat.get("type")
             tema = kerdes_adat.get("tema")
+            magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.")
             valasz = user_answers.get(k_id) 
 
             helyes_e = False
-            feedback = {}
+            feedback = {"explanation": magyarazat}
 
             if tipus == "single_choice":
                 helyes_valasz = kerdes_adat.get("correct_answer")
