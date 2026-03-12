@@ -48,21 +48,30 @@ class Temakorlista:
 
     def get_files(self):
         if not self.temakor_neve: return []
-        return os.listdir(self.mappa_utvonal)
-
+        return [f for f in os.listdir(self.mappa_utvonal) if f.lower().endswith('.pdf')]
+    
     def add_pdf(self, forras_utvonal):
         if not self.temakor_neve: return
         fajl_neve = os.path.basename(forras_utvonal)
         cel_utvonal = os.path.join(self.mappa_utvonal, fajl_neve)
         shutil.copy(forras_utvonal, cel_utvonal)
         self.pdf_processor.process_and_store(forras_utvonal, self.temakor_neve, fajl_neve)
-
+        
     def delete_pdf(self, fajl_nev):
         if not self.temakor_neve: return
+        
+        #pdf törlése
         fajl_utvonal = os.path.join(self.mappa_utvonal, fajl_nev)
         if os.path.exists(fajl_utvonal):
             os.remove(fajl_utvonal)
+            
+        # vektorok törlése
         self.pdf_processor.delete_pdf_data(self.temakor_neve, fajl_nev)
+
+        #json fájl törlése
+        progress_json_utvonal = os.path.join(self.base_path, self.temakor_neve, "progress", f"{fajl_nev}_progress.json")
+        if os.path.exists(progress_json_utvonal):
+            os.remove(progress_json_utvonal)
 
     def get_chroma_db_path(self):
         """Visszaadja a ChromaDB elérési útját az aktuális témakörhöz."""

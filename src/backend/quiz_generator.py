@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import json
+import random
 
 class quiz_generator:
     def __init__(self, raw_folder_path):
@@ -26,39 +27,74 @@ class quiz_generator:
     def generalj_kvizt(self, pdf_neve, maximumkerdes ):
         szoveg = self._get_pdf_content(pdf_neve)
 
-        #pdf temakorokre valo bontasa
-        temakor_prompt = f"""
-        Elemezd a lenti megadott tananyagot, és oszd fel logikai témakörökre.
+        subject_folder = os.path.dirname(self.raw_folder_path)
+        progress_folder = os.path.join(subject_folder, "progress")
+        os.makedirs(progress_folder, exist_ok=True)
+        
+        json_path = os.path.join(progress_folder, f"{pdf_neve}_progress.json")
 
-        SZABÁLYOK:
-        1. Bontsd fel a szöveget maximum {maximumkerdes} darab témakörre (nem baj, ha kevesebb témát találsz).
-        2. KIZÁRÓLAG olyan témaköröket sorolj fel, amelyek ténylegesen szerepelnek a lenti tananyagban. Ne találj ki újakat!
-        3. A válaszod KIZÁRÓLAG egy érvényes JSON formátum legyen, pontosan a következő minta alapján:
+        if os.path.exists(json_path):
+            # Ha létezik, csak beolvassuk
+            with open(json_path, 'r', encoding='utf-8') as f:
+                temak = json.load(f)
+                
+            temakorok_lista = list(temak.keys()) 
+            
+        else:
+            
+            temakor_prompt = f"""
+            Elemezd a lenti megadott tananyagot, és oszd fel jól körülhatárolható, vizsgáztatható mikrotémákra (kulcsfogalmakra, összefüggésekre, tényekre).
 
-        JSON MINTA:
-        {{
-          "temakorok_szama": 3,
-          "temakorok_listaja": [
-            "Az ókori Róma történelme",
-            "A római társadalom felépítése",
-            "A hadsereg szerepe"
-          ]
-        }}
+            SZABÁLYOK:
+            1. Szűrd ki a bevezető, leíró "rizsát"! Csak olyan specifikus témákat emelj ki, amikből konkrét, egyértelmű kvízkérdéseket lehet írni.
+            2. Ne nagy, átfogó kategóriákat írj (pl. "Biológia alapjai"), hanem konkrétumokat (pl. "A mitokondrium szerepe a sejtlégzésben", "Az enzimek kulcs-zár modellje").
+            3. Szerepeltesd a listában a tananyag összes releváns, vizsgáztatható mikrotémáját (mennyiségi korlát nincs, de csak a lényeget emeld ki).
+            4. KIZÁRÓLAG olyan témákat sorolj fel, amelyek ténylegesen szerepelnek a lenti tananyagban. Ne találj ki újakat!
+            5. A válaszod KIZÁRÓLAG egy érvényes JSON formátum legyen, pontosan a következő minta alapján:
 
-        TANANYAG:
-        {szoveg}
-        """
+            JSON MINTA:
+            {{
+              "mikrotemak_szama": 3,
+              "mikrotemak_listaja": [
+                "A sejtmembrán felépítése (folyékony mozaik modell)",
+                "A fotoszintézis fényszakaszának lépései",
+                "A DNS kettős hélix szerkezete és bázispárjai"
+              ]
+            }}
 
-        temakorok = self.client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=temakor_prompt,
-            config={"response_mime_type": "application/json"}
-        )
+            TANANYAG:
+            {szoveg}
+            """
 
-        #json adatok kinyerese
-        temakor_adatok = json.loads(temakorok.text)
-        temakorok_szama = temakor_adatok["temakorok_szama"]
-        temakorok_lista = temakor_adatok["temakorok_listaja"] 
+            temakorok = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=temakor_prompt,
+                config={"response_mime_type": "application/json"}
+            )
+
+            #json adatok kinyerese
+            temakor_adatok = json.loads(temakorok.text)
+            temakorok_szama = temakor_adatok["mikrotemak_szama"]
+            temakorok_lista = temakor_adatok["mikrotemak_listaja"] 
+
+            temak = {}
+            for tema in temakor_adatok["mikrotemak_listaja"]:
+                temak[tema] = {
+                    "valaszok": 5,
+                    "elsajatitva": False
+                }
+            
+            #Lementjük a JSON fájlba
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(temak, f, ensure_ascii=False, indent=4)
+
+        meg_tanulando = [tema for tema, adatok in temak.items() if not adatok["elsajatitva"]]
+
+        if not meg_tanulando:
+            meg_tanulando = temakorok_lista
+            
+        temakorok_szama = min(len(meg_tanulando), maximumkerdes)
+        kivalasztott_temak = random.sample(meg_tanulando, temakorok_szama)
 
         #kvizek generalasa
         kvizek_prompt = f"""
@@ -66,7 +102,7 @@ class quiz_generator:
 
         SZABÁLYOK:
         1. A kérdések száma összesen: {temakorok_szama} db legyen.
-        2. Minden témakörből 1 kérdést tegyél fel. A témakörök: {temakorok_lista}.
+        2. Minden alábbi témakörből 1 kérdést tegyél fel. A témakörök: {kivalasztott_temak}.
         3. A válaszod KIZÁRÓLAG egy érvényes JSON lista legyen, annyi elemmel, ahány kérdést kértem.
         4. Olyan feladattípust válassz a témakörökhöz, amivel azt a legjobban számon lehet kérni.
         5. Tartsd szem előtt, hogy KIZÁRÓLAG a lenti tananyag tartalmát kell számon kérned.
@@ -79,14 +115,16 @@ class quiz_generator:
             "type": "single_choice",
             "question": "Kérdés szövege...",
             "options": ["Rossz 1", "Helyes", "Rossz 2", "Rossz 3"],
-            "correct_answer": "Helyes"
+            "correct_answer": "Helyes",
+            "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
             "id": 2,
             "type": "multiple_choice",
             "question": "Melyek igazak?",
             "options": ["A", "B", "C", "D"],
-            "correct_answers": ["A", "C"]
+            "correct_answers": ["A", "C"],
+            "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
             "id": 3,
@@ -95,19 +133,22 @@ class quiz_generator:
             "pairs": {{
               "Bal 1": "Jobb 1",
               "Bal 2": "Jobb 2"
-            }}
+            }},
+            "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
             "id": 4,
             "type": "ordering",
             "instruction": "Tedd sorrendbe!",
-            "ordered_items": ["Első", "Második", "Harmadik"]
+            "ordered_items": ["Első", "Második", "Harmadik"],
+            "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }},
           {{
             "id": 5,
             "type": "short_answer",
             "question": "Mi a neve...?",
-            "accepted_keywords": ["kulcsszó1", "kulcsszó2"]
+            "accepted_keywords": ["kulcsszó1", "kulcsszó2"],
+            "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
           }}
         ]
 

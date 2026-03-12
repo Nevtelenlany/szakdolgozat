@@ -1,4 +1,5 @@
 import os
+import json
 
 class QuizFileManager:
     @staticmethod
@@ -9,7 +10,7 @@ class QuizFileManager:
 
 class QuizEvaluator:
     @staticmethod
-    def evaluate_quiz(quiz_data, user_answers):
+    def evaluate_quiz(quiz_data, user_answers, raw_folder_path=None, pdf_neve=None): # <--- Így már jó lesz!
         ossz_pont = len(quiz_data)
         elert_pont = 0
         eredmenyek = {}
@@ -17,6 +18,7 @@ class QuizEvaluator:
         for kerdes_adat in quiz_data:
             k_id = kerdes_adat.get("id")
             tipus = kerdes_adat.get("type")
+            tema = kerdes_adat.get("tema")
             valasz = user_answers.get(k_id) 
 
             helyes_e = False
@@ -62,11 +64,51 @@ class QuizEvaluator:
 
             eredmenyek[k_id] = {
                 "helyes": helyes_e,
-                "feedback": feedback
+                "feedback": feedback,
+                "tema": tema
             }
 
+        if raw_folder_path and pdf_neve:
+            QuizEvaluator._update_progress(raw_folder_path, pdf_neve, eredmenyek)
+
         return elert_pont, ossz_pont, eredmenyek
-    
+    @staticmethod
+    def _update_progress(raw_folder_path, pdf_neve, eredmenyek):
+        subject_folder = os.path.dirname(raw_folder_path)
+        progress_folder = os.path.join(subject_folder, "progress")
+        json_path = os.path.join(progress_folder, f"{pdf_neve}_progress.json")
+        
+        if not os.path.exists(json_path):
+            return
+
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                temak = json.load(f)
+                
+            for k_id, adat in eredmenyek.items():
+                tema_neve = adat.get("tema")
+                helyes_e = adat.get("helyes")
+                
+                if tema_neve and tema_neve in temak:
+                    if helyes_e:
+
+                        if temak[tema_neve]["valaszok"] > 0:
+                            temak[tema_neve]["valaszok"] -= 1
+                            
+                        if temak[tema_neve]["valaszok"] == 0:
+                            temak[tema_neve]["elsajatitva"] = True
+                    else:
+                        
+                        if temak[tema_neve]["valaszok"] < 5:
+                            temak[tema_neve]["valaszok"] += 1
+                        temak[tema_neve]["elsajatitva"] = False
+                        
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(temak, f, ensure_ascii=False, indent=4)
+                
+        except Exception as e:
+            print(f"Hiba a haladás mentésekor: {e}")
+
     @staticmethod
     def get_evaluation_summary(elert_pont, ossz_pont):
         szazalek = (elert_pont / ossz_pont) * 100 if ossz_pont > 0 else 0

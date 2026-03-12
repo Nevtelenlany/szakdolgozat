@@ -166,8 +166,14 @@ class quiz_generator_view(QWidget):
                 valasz_lista = [combo.currentText() for combo in vezerlo_adat["combok"]]
                 user_answers[k_id] = valasz_lista
 
-        elert_pont, ossz_pont, eredmenyek = QuizEvaluator.evaluate_quiz(self.jelenlegi_kviz_adatok, user_answers)
-
+        kivalasztott_pdf = self.pdf_valaszto.currentText()
+        elert_pont, ossz_pont, eredmenyek = QuizEvaluator.evaluate_quiz(
+            self.jelenlegi_kviz_adatok, 
+            user_answers,
+            raw_folder_path=self.mappa_utvonal, 
+            pdf_neve=kivalasztott_pdf
+        )
+        
         self.szinezd_ki_a_kvizt(eredmenyek)
         self.eredmeny_megjelenitese(elert_pont, ossz_pont)
 
