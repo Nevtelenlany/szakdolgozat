@@ -52,3 +52,37 @@ def hatter_torles(db_path, fajl_neve):
 
     except ValueError:
         pass
+    
+
+def hatter_teljes_szoveg_lekeres(db_path, pdf_neve, queue):
+    """Lekéri az összes chunkot egy adott PDF-hez a ChromaDB-ből."""
+    klien = chromadb.PersistentClient(path=db_path, settings=Settings(anonymized_telemetry=False))
+    kollekcio = klien.get_or_create_collection(name="my-collection")
+    
+    minden_adat = kollekcio.get(where={"forras": pdf_neve})
+    
+    if not minden_adat or not minden_adat.get("documents"):
+        queue.put({"status": "hiba", "uzenet": f"Nincs adat az adatbázisban a(z) {pdf_neve} fájlhoz!"})
+        return
+        
+    teljes_szoveg = "\n".join(minden_adat["documents"])
+    queue.put({"status": "ok", "szoveg": teljes_szoveg})
+
+def hatter_kviz_kereses(db_path, vektorok, pdf_neve, queue):
+    """Vektoros RAG keresést végez a kvíz generálásához."""
+    klien = chromadb.PersistentClient(path=db_path, settings=Settings(anonymized_telemetry=False))
+    kollekcio = klien.get_or_create_collection(name="my-collection")
+    
+    eredmeny = kollekcio.query(
+        query_embeddings=vektorok,
+        n_results=3,
+        where={"forras": pdf_neve}
+    )
+    
+    kontextus_halmaz = set()
+    for docs in eredmeny['documents']:
+        for doc in docs:
+            kontextus_halmaz.add(doc)
+            
+    kontextus_szoveg = "\n\n---\n\n".join(kontextus_halmaz)
+    queue.put({"status": "ok", "kontextus": kontextus_szoveg})

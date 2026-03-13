@@ -1,10 +1,11 @@
-import fitz
 import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import json
 import random
+import multiprocessing
+from backend.db_worker import hatter_teljes_szoveg_lekeres, hatter_kviz_kereses
 
 class quiz_generator:
     def __init__(self, raw_folder_path):
@@ -15,32 +16,33 @@ class quiz_generator:
        self.client = genai.Client(api_key=self.api_key)       
        self.raw_folder_path = raw_folder_path 
 
-    def _get_pdf_content(self, pdf_neve):
-      pdf_path = os.path.join(self.raw_folder_path, pdf_neve)
-        
-      #pdf megnyitasa
-      with fitz.open(pdf_path) as doc:  #documentum megnyitasa
-        szoveg = chr(12).join([page.get_text() for page in doc])
-        
-      return szoveg
-    
-    def generalj_kvizt(self, pdf_neve, maximumkerdes ):
-        szoveg = self._get_pdf_content(pdf_neve)
+    def generalj_kvizt(self, pdf_neve, maximumkerdes):
+        tiszta_raw_utvonal = os.path.normpath(self.raw_folder_path)
+        subject_folder = os.path.dirname(tiszta_raw_utvonal) 
+        db_path = os.path.join(subject_folder, "chroma_db")
 
-        subject_folder = os.path.dirname(self.raw_folder_path)
         progress_folder = os.path.join(subject_folder, "progress")
         os.makedirs(progress_folder, exist_ok=True)
-        
         json_path = os.path.join(progress_folder, f"{pdf_neve}_progress.json")
 
         if os.path.exists(json_path):
-            # Ha létezik, csak beolvassuk
             with open(json_path, 'r', encoding='utf-8') as f:
                 temak = json.load(f)
-                
             temakorok_lista = list(temak.keys()) 
-            
         else:
+            q_szoveg = multiprocessing.Queue()
+            process_szoveg = multiprocessing.Process(
+                target=hatter_teljes_szoveg_lekeres,
+                args=(db_path, pdf_neve, q_szoveg)
+            )
+            process_szoveg.start()
+            eredmeny_szoveg = q_szoveg.get()
+            process_szoveg.join()
+
+            if eredmeny_szoveg["status"] == "hiba":
+                raise ValueError(eredmeny_szoveg["uzenet"])
+            
+            teljes_szoveg = eredmeny_szoveg["szoveg"]
             
             temakor_prompt = f"""
             Elemezd a lenti megadott tananyagot, és oszd fel jól körülhatárolható, vizsgáztatható mikrotémákra (kulcsfogalmakra, összefüggésekre, tényekre).
@@ -63,7 +65,7 @@ class quiz_generator:
             }}
 
             TANANYAG:
-            {szoveg}
+            {teljes_szoveg}
             """
 
             temakorok = self.client.models.generate_content(
@@ -96,9 +98,30 @@ class quiz_generator:
         temakorok_szama = min(len(meg_tanulando), maximumkerdes)
         kivalasztott_temak = random.sample(meg_tanulando, temakorok_szama)
 
-        #kvizek generalasa
+        result = self.client.models.embed_content(
+            model="gemini-embedding-001",
+            contents=kivalasztott_temak,
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY", output_dimensionality=768)
+        )
+        vektorok = [emb.values for emb in result.embeddings]
+
+        # 2. BIZTONSÁGOS LEKÉRDEZÉS (RAG kontextus) MULTIPROCESSINGGEL
+        q_kontextus = multiprocessing.Queue()
+        process_kontextus = multiprocessing.Process(
+            target=hatter_kviz_kereses,
+            args=(db_path, vektorok, pdf_neve, q_kontextus)
+        )
+        process_kontextus.start()
+        eredmeny_kontextus = q_kontextus.get()
+        process_kontextus.join()
+
+        if eredmeny_kontextus["status"] == "hiba":
+            raise ValueError(eredmeny_kontextus.get("uzenet", "Hiba a RAG keresés során."))
+            
+        kontextus_szoveg = eredmeny_kontextus["kontextus"]
+
         kvizek_prompt = f"""
-        Készíts egy változatos kvíz-feladatsort az alábbi tananyagból.
+        Készíts egy változatos kvíz-feladatsort az alábbi tananyagrészletekből.
 
         SZABÁLYOK:
         1. A kérdések száma összesen: {temakorok_szama} db legyen.
@@ -157,8 +180,8 @@ class quiz_generator:
           }}
         ]
 
-        TANANYAG:
-        {szoveg}
+        TANANYAG (Csak ebből dolgozz!):
+        {kontextus_szoveg}
         """
 
         kvizek = self.client.models.generate_content(
@@ -167,5 +190,4 @@ class quiz_generator:
             config={"response_mime_type": "application/json"}
         )
 
-        #json adatok kinyerese
         return json.loads(kvizek.text)
