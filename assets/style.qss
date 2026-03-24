@@ -93,7 +93,7 @@ QPushButton#MenuButton:hover {
 }
 
 /* Táblázat alapstílusa*/
-QTableWidget {
+QTableWidget, QTableView {
     background-color: transparent; 
     color: white;
     border: none;
@@ -117,18 +117,23 @@ QHeaderView::section {
 }
 
 /* Táblázat cellái*/
-QTableWidget::item {
+QTableWidget::item, QTableView::item {
     background-color: #7092BE; 
     border: none;
     padding-left: 5px; 
 }
 
 /* Táblázat cellái*/
-QTableWidget::item:alternate {
+QTableWidget::item:alternate, QTableView::item:alternate {
     background-color: #9fb1c9; 
 }
 
 QTableWidget QWidget {
+    background-color: transparent;
+    color: #e0e0e0; 
+}
+
+QTableView QWidget {
     background-color: transparent;
     color: #e0e0e0; 
 }

@@ -1,107 +1,69 @@
-import os
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QLabel, QInputDialog, QApplication, QGridLayout, QHBoxLayout, QSizePolicy, QScrollArea
+from pathlib import Path
+from PyQt6.QtWidgets import (QPushButton, QVBoxLayout, QWidget, QLabel, 
+                             QInputDialog, QApplication, QHBoxLayout, 
+                             QSizePolicy, QScrollArea, QGridLayout)
 from PyQt6.QtCore import pyqtSignal, Qt, QSize
 from PyQt6.QtGui import QIcon
+
 from backend.temakoroklistaja import Temakorlista
 
 class HomeScreen(QWidget):
     valasztott_temakor = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-
         self.backend = Temakorlista()
+        
+        self._setup_layout()
+        self._load_stylesheet()
+        self._setup_header_and_empty_state()
+        self._setup_grid_view()
+        self._setup_bottom_buttons()
+        
+        self.frissit_kepernyot()
 
+    def _setup_layout(self) -> None:
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        jelenlegi_mappa = os.path.dirname(os.path.abspath(__file__)) #ennek a file-nak a helye
-        stilus_utvonal = os.path.join(jelenlegi_mappa, "..", "..", "..", "assets", "style.qss")
-        stilus_utvonal = os.path.normpath(stilus_utvonal) #rendet tesz a perjelek között
-
-        if os.path.exists(stilus_utvonal):
-            with open(stilus_utvonal, "r", encoding="utf-8") as style_file:
-                self.setStyleSheet(style_file.read())
-
-        self.frissit_kepernyot()
-
-    def button_push(self):  #Temakor nevenek a megadasa
-        while True:
-            text, ok = QInputDialog().getText(self, "Új témakör","Mi legyen az új témakör neve?")
-            if not ok:
-                    return
-            tiszta_szoveg = text.strip()
-            
-            if tiszta_szoveg == "": continue
-            if ok: 
-                 self.backend.create_subject(tiszta_szoveg)
-                 break
-        self.frissit_kepernyot()
-            
-
-    def frissit_kepernyot(self):
-        #Vegigmegy a layout elemein es letorol mindent
-        while self.layout.count():
-            item = self.layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater() # letorli a memoriabol es a kepernyorol
-            elif item.layout() is not None:
-                self.torol_layout(item.layout())
-
-        cim_szoveg = QLabel("Témakörök listája")
-        cim_szoveg.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        cim_szoveg.setObjectName("MainTitle")
-
-        self.layout.addWidget(cim_szoveg)
-
-        lista = self.backend.get_subjects()
-
-        if len(lista) == 0:  #Nincs tantargy -> gomb rajzolasa
-            szoveg = QLabel("Hmm még nincs létrehozva témakör. Esetleg hozz létre újat! ")
-            szoveg.setObjectName("EmptyText")
-
-            szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            szoveg.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            
-            self.layout.addWidget(szoveg)
-            self.layout.addWidget(szoveg)
-             
+    def _load_stylesheet(self) -> None:
+        stilus_utvonal = Path(__file__).resolve().parents[3] / "assets" / "style.qss"
+        if stilus_utvonal.exists():
+            self.setStyleSheet(stilus_utvonal.read_text(encoding="utf-8"))
         else:
-            #Rács létrehozasa 
-            grid_layout = QGridLayout()
-            oszlopok_szama = 4
+            print(f"Hiba (HomeScreen): Nem találom a stíluslapot itt: {stilus_utvonal}")
 
-            for index, mappa_nev in enumerate(lista):
-                 pozicio = index
-                 sor = pozicio // oszlopok_szama
-                 oszlop = pozicio % oszlopok_szama
-            
-                 tantargy_gomb = QPushButton(mappa_nev)
-                 tantargy_gomb.setMinimumSize(140, 140)
-                 tantargy_gomb.setObjectName("SubjectButton")
-                 tantargy_gomb.setMaximumSize(300, 300)
-                 tantargy_gomb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-                 tantargy_gomb.setCheckable(True)
-                 tantargy_gomb.clicked.connect(lambda ellenorzes=False, nev=mappa_nev: self.tantargy_megnyitasa(nev))
-                 grid_layout.addWidget(tantargy_gomb, sor, oszlop)
+    def _setup_header_and_empty_state(self) -> None:
+        self.cim_szoveg = QLabel("Témakörök listája")
+        self.cim_szoveg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.cim_szoveg.setObjectName("MainTitle")
+        self.layout.addWidget(self.cim_szoveg)
 
-            grid_doboz = QWidget()
-            grid_doboz.setLayout(grid_layout)
-            
-            #létrehozzuk a görgetősávot
-            scroll_area = QScrollArea()
-            scroll_area.setWidgetResizable(True)
-            scroll_area.setWidget(grid_doboz)
-            self.layout.addWidget(scroll_area)
+        self.ures_szoveg = QLabel("Hmm még nincs létrehozva témakör. Esetleg hozz létre újat!")
+        self.ures_szoveg.setObjectName("EmptyText")
+        self.ures_szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.ures_szoveg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(self.ures_szoveg)
+        self.ures_szoveg.hide()
+
+    def _setup_grid_view(self) -> None:
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setObjectName("SubjectScrollArea")
+
+        self.grid_container = QWidget()
+        self.grid_layout = QGridLayout(self.grid_container)
         
+        self.scroll_area.setWidget(self.grid_container)
+        self.layout.addWidget(self.scroll_area)
+
+    def _setup_bottom_buttons(self) -> None:
         also_gombok_layout = QHBoxLayout()
 
         self.uj_gomb = QPushButton("Új témakör létrehozása")
         self.uj_gomb.setIcon(QIcon("assets/icons/hozzadas_gomb.png"))
-        self.uj_gomb.setIconSize(QSize(24, 24)) #ikon merete
+        self.uj_gomb.setIconSize(QSize(24, 24))
         self.uj_gomb.setObjectName("ActionButton")
-        
         self.uj_gomb.clicked.connect(self.button_push)
         also_gombok_layout.addWidget(self.uj_gomb)
         
@@ -112,15 +74,41 @@ class HomeScreen(QWidget):
 
         self.layout.addLayout(also_gombok_layout)
 
-    def tantargy_megnyitasa(self, kivalasztott_temakor):
-        self.valasztott_temakor.emit(kivalasztott_temakor)
+    def button_push(self) -> None:  
+        text, ok = QInputDialog().getText(self, "Új témakör", "Mi legyen az új témakör neve?")
+        
+        if ok and (tiszta_szoveg := text.strip()):
+            self.backend.create_subject(tiszta_szoveg)
+            self.frissit_kepernyot()
 
-    def torol_layout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
-            elif item.layout() is not None:
-                self.torol_layout(item.layout())
-        layout.deleteLater()
+    def frissit_kepernyot(self) -> None:
+        lista = self.backend.get_subjects()
+
+        if not lista:
+            self.scroll_area.hide()
+            self.ures_szoveg.show()
+        else:
+            self.ures_szoveg.hide()
+            self.scroll_area.show()
+            
+            while self.grid_layout.count():
+                item = self.grid_layout.takeAt(0)
+                if widget := item.widget():
+                    widget.deleteLater()
+
+            oszlopok_szama = 4
+            for index, mappa_nev in enumerate(lista):
+                sor = index // oszlopok_szama
+                oszlop = index % oszlopok_szama
+                
+                tantargy_gomb = QPushButton(mappa_nev)
+                tantargy_gomb.setMinimumSize(140, 140)
+                tantargy_gomb.setMaximumSize(300, 300)
+                tantargy_gomb.setObjectName("SubjectButton")
+                tantargy_gomb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+                tantargy_gomb.clicked.connect(lambda checked=False, nev=mappa_nev: self.tantargy_megnyitasa(nev))
+                
+                self.grid_layout.addWidget(tantargy_gomb, sor, oszlop)
+
+    def tantargy_megnyitasa(self, kivalasztott_temakor: str) -> None:
+        self.valasztott_temakor.emit(kivalasztott_temakor)

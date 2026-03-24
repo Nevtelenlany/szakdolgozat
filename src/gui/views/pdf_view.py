@@ -1,88 +1,86 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QSizePolicy, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QMessageBox
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon
-import os
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, 
+                             QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView, 
+                             QAbstractItemView, QMessageBox)
+from PyQt6.QtCore import Qt
 from functools import partial
+import os
 
 from backend.temakoroklistaja import Temakorlista
 
-class pdf_view(QWidget):
-    def __init__(self, temakor_neve):
+class PdfView(QWidget):
+    def __init__(self, temakor_neve: str) -> None:
         super().__init__()
         
         self.temakor_neve = temakor_neve
-
-        #peldanyositas
         self.backend = Temakorlista(temakor_neve)
 
+        self._setup_layout()
+        self._setup_empty_state()
+        self._setup_table()
+        self._setup_buttons()
+        
+        self.frissit_kepernyot()
+
+    def _setup_layout(self) -> None:
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-
-        self.frissit_kepernyot()
-    
-    def frissit_kepernyot(self):
-        #Vegigmegy a layout elemein es letorol mindent
-        while self.layout.count():
-            item = self.layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater() # letorli a memoriabol es a kepernyorol
         
+    def _setup_empty_state(self) -> None:
+        self.ures_szoveg = QLabel("Hmm még nincs pdf feltöltve. Esetleg tölts fel egyet! ")
+        self.ures_szoveg.setObjectName("EmptyText2")
+        self.ures_szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.layout.addWidget(self.ures_szoveg)
+
+    def _setup_table(self) -> None:
+        self.tablazat = QTableWidget()
+        self.tablazat.setColumnCount(2)
+        self.tablazat.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+        self.tablazat.setHorizontalHeaderLabels(["A fájl neve", ""])
+        self.tablazat.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.tablazat.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.tablazat.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+
+        self.tablazat.verticalHeader().setVisible(False)
+        self.tablazat.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tablazat.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        
+        self.layout.addWidget(self.tablazat)
+
+    def _setup_buttons(self) -> None:
+        self.hozzaad_gomb = QPushButton("Új pdf hozzá adása")
+        self.hozzaad_gomb.setObjectName("ActionButton")
+        self.hozzaad_gomb.clicked.connect(self._hozzaad_pdf_kattintas)
+        self.layout.addWidget(self.hozzaad_gomb)
+
+    def frissit_kepernyot(self) -> None:
         lista = self.backend.get_files()
-
-        if len(lista) == 0:  #Nincs tantargy -> gomb rajzolasa
-            szoveg = QLabel("Hmm még nincs pdf feltöltve. Esetleg tölts fel egyet! ")
-            szoveg.setObjectName("EmptyText2")
-            szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-            self.layout.addWidget(szoveg)
-             
+        
+        if len(lista) == 0:
+            self.tablazat.hide()
+            self.ures_szoveg.show()
         else:
-            # tablazat letrehozasa
-            tablazat = QTableWidget()
-            tablazat.setColumnCount(2) # oszlopok szama
-            tablazat.setRowCount(len(lista)) # sorok szama
-            tablazat.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.ures_szoveg.hide()
+            self.tablazat.show()
             
-            # fejlec
-            tablazat.setHorizontalHeaderLabels(["A fájl neve", ""])
-            tablazat.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-            tablazat.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            tablazat.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-
-            # alapméretezetten sorszámozott eltüntetése
-            tablazat.verticalHeader().setVisible(False)
-            # csak olvashato
-            tablazat.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+            self.tablazat.setRowCount(len(lista))
             
             for sor_index, fajl_nev in enumerate(lista):
-                #fajl neve cim
                 item = QTableWidgetItem(fajl_nev)
-                tablazat.setItem(sor_index, 0, item)
+                self.tablazat.setItem(sor_index, 0, item)
                 
-                #torles gomb
                 torles_gomb = QPushButton("Törlés")
-                torles_gomb.clicked.connect(partial(self.torol_pdf, fajl_nev))
-                tablazat.setCellWidget(sor_index, 1, torles_gomb)
-                
-            self.layout.addWidget(tablazat)
+                torles_gomb.clicked.connect(partial(self._torol_pdf_kattintas, fajl_nev))
+                self.tablazat.setCellWidget(sor_index, 1, torles_gomb)
 
-        #self.layout.addStretch()
-        gomb = QPushButton("Új pdf hozzá adása")
-        gomb.setObjectName("ActionButton")
-        gomb.clicked.connect(self.button_push)
+    def _hozzaad_pdf_kattintas(self) -> None:
+        utvonal, _ = QFileDialog.getOpenFileName(self, "PDF kiválasztása", "", "PDF fájlok (*.pdf)")
         
-        self.layout.addWidget(gomb)
-
-    def button_push(self):
-        #fajl utvonala
-        utvonal, _ = QFileDialog.getOpenFileName(self,"PDF kiválasztása", "","PDF fájlok (*.pdf)")
-        if utvonal:
-            tiszta_utvonal = utvonal.strip()
+        if utvonal and (tiszta_utvonal := utvonal.strip()):
             self.backend.add_pdf(tiszta_utvonal)
             self.frissit_kepernyot()
 
-    def torol_pdf(self, fajl_nev):
+    def _torol_pdf_kattintas(self, fajl_nev: str) -> None:
         valasz = QMessageBox.question(
             self, 
             'Törlés megerősítése', 

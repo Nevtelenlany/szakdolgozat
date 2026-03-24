@@ -1,89 +1,103 @@
-import os
+from pathlib import Path
 import shutil
 
-from backend.pdf_loader import PDFProcessor
+from backend.pdf_feldolgozo import PdfFeldolgozo
 
 class Temakorlista:
-    def __init__(self, temakor_neve=None, base_path="./data/subjects/"):
-        self.base_path = base_path
-        os.makedirs(self.base_path, exist_ok=True)
-        
+    def __init__(self, temakor_neve: str | None = None, base_path: str | Path = "./data/subjects/") -> None:
+        self.base_path = Path(base_path)
+        self.base_path.mkdir(parents=True, exist_ok=True)
+
         self.temakor_neve = temakor_neve
         if self.temakor_neve:
-            self.mappa_utvonal = os.path.join(self.base_path, self.temakor_neve, "raw")
-            os.makedirs(self.mappa_utvonal, exist_ok=True)
-            self.pdf_processor = PDFProcessor()
+            self.mappa_utvonal = self.base_path / self.temakor_neve / "raw"
+            self.mappa_utvonal.mkdir(parents=True, exist_ok=True)
+            self.pdf_processor = PdfFeldolgozo()
 
-    def get_subjects(self):
-        return os.listdir(self.base_path)
+    def get_subjects(self) -> list[str]:
+        return [mappa.name for mappa in self.base_path.iterdir() if mappa.is_dir()]
 
-    def create_subject(self, name):
-        path = os.path.join(self.base_path, name)
-        os.makedirs(path, exist_ok=True)
+    def create_subject(self, name: str) -> None:
+        path = self.base_path / name
+        path.mkdir(parents=True, exist_ok=True)
 
-    def rename_subject(self, old_name, new_name):
-            old_path = os.path.join(self.base_path, old_name)
-            new_path = os.path.join(self.base_path, new_name)
+    def rename_subject(self, old_name: str, new_name: str) -> tuple[bool, str]:
+        old_path = self.base_path / old_name
+        new_path = self.base_path / new_name
 
-            if os.path.exists(new_path):
-                return False, "Ilyen nevű témakör már létezik!"
-            try:
-                os.rename(old_path, new_path)
-                return True, "Sikeres átnevezés."
-            except Exception as e:
-                return False, f"Hiba történt az átnevezés során: {str(e)}"
-
-    def delete_subject(self, name):
-        path = os.path.join(self.base_path, name)
-        
-        if not os.path.exists(path):
-            return False, "A témakör nem található."
+        if new_path.exists():
+            return False, "Ilyen nevű témakör már létezik!"
+            
         try:
-            # shutil.rmtree törli a mappát és a tartalmát
+            old_path.rename(new_path)
+            return True, "Sikeres átnevezés."
+        except FileNotFoundError:
+            return False, "Hiba: Az átnevezni kívánt témakör nem található."
+        except PermissionError:
+            return False, "Hiba: Nincs jogosultság a mappa átnevezéséhez."
+        except OSError as e:
+            return False, f"Fájlrendszeri hiba történt az átnevezés során: {e}"
+
+    def delete_subject(self, name: str) -> tuple[bool, str]:
+        path = self.base_path / name
+
+        try:
             shutil.rmtree(path)
             return True, "Sikeres törlés."
-        except Exception as e:
-            return False, f"Hiba történt a törlés során: {str(e)}"
-        
+        except FileNotFoundError:
+            return False, "Hiba: A témakör nem található."
+        except PermissionError:
+            return False, "Hiba: Nincs jogosultság a mappa törléséhez."
+        except OSError as e:
+            return False, f"Fájlrendszeri hiba történt a törlés során: {e}"
 
-    def get_files(self):
-        if not self.temakor_neve: return []
-        return [f for f in os.listdir(self.mappa_utvonal) if f.lower().endswith('.pdf')]
-    
-    def add_pdf(self, forras_utvonal):
-        if not self.temakor_neve: return
-        fajl_neve = os.path.basename(forras_utvonal)
-        cel_utvonal = os.path.join(self.mappa_utvonal, fajl_neve)
-        shutil.copy(forras_utvonal, cel_utvonal)
-        self.pdf_processor.process_and_store(forras_utvonal, self.temakor_neve, fajl_neve)
-        
-    def delete_pdf(self, fajl_nev):
-        if not self.temakor_neve: return
-        
-        #pdf törlése
-        fajl_utvonal = os.path.join(self.mappa_utvonal, fajl_nev)
-        if os.path.exists(fajl_utvonal):
-            os.remove(fajl_utvonal)
+    def get_files(self) -> list[str]:
+        if not self.temakor_neve: 
+            return []
             
-        # vektorok törlése
+        return [f.name for f in self.mappa_utvonal.iterdir() if f.is_file() and f.name.lower().endswith('.pdf')]
+    
+    def add_pdf(self, forras_utvonal: str | Path) -> None:
+        if not self.temakor_neve: 
+            return
+            
+        forras_path = Path(forras_utvonal)
+        fajl_neve = forras_path.name
+        self._masol_fizikai_fajlt(forras_path, fajl_neve)
+        self._vektorizalas_es_mentes(forras_path, fajl_neve)
+
+    def _masol_fizikai_fajlt(self, forras_path: Path, fajl_neve: str) -> None:
+        cel_utvonal = self.mappa_utvonal / fajl_neve
+        shutil.copy(forras_path, cel_utvonal)
+
+    def _vektorizalas_es_mentes(self, forras_path: Path, fajl_neve: str) -> None:
+        self.pdf_processor.feldolgozas_es_mentes(str(forras_path), self.temakor_neve, fajl_neve)
+
+    def delete_pdf(self, fajl_nev: str) -> None:
+        if not self.temakor_neve: 
+            return
+        
+        self._torol_fizikai_fajlt(fajl_nev)
+        self._torol_adatbazis_adatokat(fajl_nev)
+        self._torol_haladas_adatokat(fajl_nev)
+
+    def _torol_fizikai_fajlt(self, fajl_nev: str) -> None:
+        fajl_utvonal = self.mappa_utvonal / fajl_nev
+        fajl_utvonal.unlink(missing_ok=True)
+            
+    def _torol_adatbazis_adatokat(self, fajl_nev: str) -> None:
         self.pdf_processor.delete_pdf_data(self.temakor_neve, fajl_nev)
 
-        #json fájl törlése
-        progress_json_utvonal = os.path.join(self.base_path, self.temakor_neve, "progress", f"{fajl_nev}_progress.json")
-        if os.path.exists(progress_json_utvonal):
-            os.remove(progress_json_utvonal)
+    def _torol_haladas_adatokat(self, fajl_nev: str) -> None:
+        progress_json_utvonal = self.base_path / self.temakor_neve / "progress" / f"{fajl_nev}_progress.json"
+        progress_json_utvonal.unlink(missing_ok=True)
 
-    def get_chroma_db_path(self):
-        """Visszaadja a ChromaDB elérési útját az aktuális témakörhöz."""
+    def get_chroma_db_path(self) -> str | None:
         if not self.temakor_neve:
             return None
-        return os.path.join(self.base_path, self.temakor_neve, "chroma_db")
+        return str(self.base_path / self.temakor_neve / "chroma_db")
 
-    def has_active_db(self):
-        """Ellenőrzi, hogy létezik-e az adatbázis a témakörhöz."""
-        db_path = self.get_chroma_db_path()
-        if not db_path:
-            return False
-        
-        db_file = os.path.join(db_path, "chroma.sqlite3")
-        return os.path.exists(db_file)
+    def has_active_db(self) -> bool:
+        if db_path := self.get_chroma_db_path():
+            return (Path(db_path) / "chroma.sqlite3").exists()
+        return False
