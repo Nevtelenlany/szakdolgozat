@@ -7,7 +7,7 @@ import os
 import multiprocessing
 from pathlib import Path
 
-from backend.db_worker import hatter_mentes, hatter_torles
+from backend.adatbazis_kezelo import hatter_mentes, hatter_torles
 
 ALAP_UTVONAL = Path("./data/subjects")
 
@@ -28,7 +28,7 @@ class PdfFeldolgozo:
 
     def _pdf_szoveg_kinyerese(self, pdf_utvonal: str) -> str:
         # 'with' automatikusan és biztonságosan lezárja a PDF fájlt a művelet végén
-        # 'as' pedig 'dokumentum' néven hivatkozik a megnyitott fájlra.
+        # 'as' pedig 'dokumentum' néven hivatkozik a megnyitott fájlra
         with fitz.open(pdf_utvonal) as dokumentum: 
             # for oldal in dokumentum: végigmegy a dokumentum összes oldalán
             # oldal.get_text(): beolvassa az aktuális oldal szövegét (stringként)
@@ -58,25 +58,36 @@ class PdfFeldolgozo:
         return vektorok
 
     def _adatbazisba_mentes(self, temakor_neve: str, fajl_neve: str, darabok: list[str], vektorok: list[list[float]]) -> None:
-        chunk_ids = [f"{fajl_neve}_chunk_{x}" for x in range(len(darabok))]
+        # egyedi azonosítók generálása minden egyes szövegdarabhoz
+        darab_azonositok = [f"{fajl_neve}_chunk_{x}" for x in range(len(darabok))]
+        # metaadatok előkészítése a darabokhoz
+        # az _ jelzi, hogy a ciklusváltozó értéke nem lesz felhasználva
+        # létrehozunk egy listát, amiben a {"forras": fajl_neve} szótár annyiszor szerepel, ahány darab chunk van
         metaadatok = [{"forras": fajl_neve} for _ in range(len(darabok))]
         
-        db_path = ALAP_UTVONAL / temakor_neve / "chroma_db"
-        db_path.mkdir(parents=True, exist_ok=True)
+        adatbazis_utvonal = ALAP_UTVONAL / temakor_neve / "chroma_db"
+        # parents=True: ha az útvonalban szereplő mappák még nem léteznek, akkor automatikusan létrehozza azokat
+        # exist_ok=True: ha a mappák már léteznek, akkor nem történik semmi (nem dob hibát)
+        adatbazis_utvonal.mkdir(parents=True, exist_ok=True)
 
-        mentes_process = multiprocessing.Process(
-            target=hatter_mentes,
-            args=(str(db_path), chunk_ids, vektorok, darabok, metaadatok)
+        # egy különálló háttérfolyamat (process) létrehozása a mentéshez.
+        # erre azért van szükség, mert a ChromaDB és a PyQt6 szálkezelési ütközései miatt a főszálon történő futtatás azonnali, hibaüzenet nélküli programleállást okoz
+        mentesi_folyamat = multiprocessing.Process(
+            target=hatter_mentes, # a hatter_mentes függvényt kell végrehajtania
+            args=(str(adatbazis_utvonal), darab_azonositok, vektorok, darabok, metaadatok) # paraméterek, amikre szüksége van a függvénynek
         )
-        mentes_process.start()
-        mentes_process.join()
+        mentesi_folyamat.start() # elindítja a háttérfolyamatot
+        mentesi_folyamat.join() # a főszál itt megáll, és megvárja, amíg a mentési folyamat teljesen befejeződik, mielőtt továbblépne
 
-    def delete_pdf_data(self, temakor_neve: str, fajl_neve: str) -> None:
-        db_path = ALAP_UTVONAL / temakor_neve / "chroma_db"
-        if db_path.exists():
-            torles_process = multiprocessing.Process(
-                target=hatter_torles,
-                args=(str(db_path), fajl_neve)
+    def pdf_adatok_torlese(self, temakor_neve: str, fajl_neve: str) -> None:
+        adatbazis_utvonal = ALAP_UTVONAL / temakor_neve / "chroma_db"
+
+        # exists() egy Igaz (True) vagy Hamis (False) értékkel tér vissza
+        # megnézi, hogy a megadott útvonalon valóban létezik-e az az adott mappa vagy fájl
+        if adatbazis_utvonal.exists():
+            torlesi_folyamat = multiprocessing.Process(
+                target=hatter_torles, # a hatter_torles függvényt kell végrehajtania
+                args=(str(adatbazis_utvonal), fajl_neve) # paraméterek, amikre szüksége van a függvénynek
             )
-            torles_process.start()
-            torles_process.join()
+            torlesi_folyamat.start() # elindítja a háttérfolyamatot
+            torlesi_folyamat.join() # a főszál itt megáll, és megvárja, amíg a törlési folyamat teljesen befejeződik, mielőtt továbblépne

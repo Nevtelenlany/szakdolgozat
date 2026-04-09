@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from backend.db_worker import hatter_kereses
+from backend.adatbazis_kezelo import hatter_kereses
 
 class ChatBot:
     
