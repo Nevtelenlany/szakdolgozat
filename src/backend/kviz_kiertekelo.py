@@ -192,3 +192,40 @@ class KvizKiertekelo:
             return "kozepes", "Szép eredmény, de van még mit tanulni!", szazalek
         else:
             return "rossz", "Ezt még át kell ismételned!", szazalek
+        
+    @staticmethod
+    def haladas_szazalek_lekerese(temakor_neve: str, fajl_neve: str) -> str:
+        json_utvonal = KvizKiertekelo._haladas_fajl_utvonal_lekerese(temakor_neve, fajl_neve)
+
+        # exists() egy Igaz (True) vagy Hamis (False) értékkel tér vissza
+        # megnézi, hogy a megadott útvonalon valóban létezik-e az az adott mappa vagy fájl
+        if not json_utvonal.exists(): 
+            return "0%"
+        
+        try:
+            # 'with' automatikusan és biztonságosan lezárja a JSON-fájlt a művelet végén
+            # 'as' pedig 'f' néven hivatkozik a megnyitott fájlra.
+            with open(json_utvonal, 'r', encoding='utf-8') as f:
+                # a json.load() beolvassa a megnyitott fájlt, és a benne lévő JSON adatokat Python szótárrá alakítja
+                temak = json.load(f)
+
+            # Ha nincs benne téma akkor jelezzűk hogy nincs mit értékelni
+            if not temak:
+                return "Nincs értékelhető tartalom"
+                
+            osszes_tema = len(temak)*5
+
+            # végigmegy az összes témán
+            # 5-öt ad hozzá, ha az "elsajatitva": True
+            # különben megnézi, milyen szám van a "valaszok" értéknél, azt kivonja 5-ből, és az eredményt adja hozzá
+            elsajatitott = sum(5 if adat.get("elsajatitva", False) else (5 - adat.get("valaszok", 0)) for adat in temak.values())
+            
+            szazalek = int((elsajatitott / osszes_tema) * 100)
+            return f"{szazalek}%"
+            
+        except (FileNotFoundError, PermissionError, json.JSONDecodeError, OSError) as hiba:
+            # type(hiba) visszaadja a hiba típusát
+            # __name__ letisztítja a kimenetet (csak a hiba nevét adja vissza)
+            # {hiba} kiírja a pontos hibaüzenetet a konzolra (fejlesztői segítség)
+            print(f"Hiba történt a haladás beolvasásakor ({type(hiba).__name__}): {hiba}")
+            return "Hiba"

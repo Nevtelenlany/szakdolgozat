@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 from functools import partial
 
 from backend.temakor_kezelo import TemakorKezelo
+from backend.kviz_kiertekelo import KvizKiertekelo
 
 class PdfNezet(QWidget):
     # inicializálja az osztályt
@@ -54,14 +55,14 @@ class PdfNezet(QWidget):
         # QTableWidget: egy táblázatot hoz létre az adatok (fájlok) megjelenítésére
         self.tablazat = QTableWidget()
         # setColumnCount: beállítja az oszlopok számát 2-re (1. oszlop: név, 2. oszlop: művelet)
-        self.tablazat.setColumnCount(2)
+        self.tablazat.setColumnCount(3)
         
         # setSizePolicy: beállítja, hogyan reagáljon a táblázat az ablak átméretezésére
         # a QSizePolicy.Policy.Expanding paraméterekkel dinamikusan kitölti a rendelkezésre álló üres helyet vízszintesen és függőlegesen is
         # ez garantálja, hogy a táblázat felvegye a képernyőn elérhető teljes méretet
         self.tablazat.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         # setHorizontalHeaderLabels: beállítja a vízszintes fejléc (az oszlopok) feliratait
-        self.tablazat.setHorizontalHeaderLabels(["A fájl neve", "Művelet"])
+        self.tablazat.setHorizontalHeaderLabels(["A fájl neve","Előrehaladás", "Művelet"])
         
         # horizontalHeader(): lekéri a táblázat felső (vízszintes) fejlécét, hogy módosítani lehessen a beállításait
         # | (VAGY) operátor bit-szinten "összeadja" a két kapcsolót, így mindkettő érvényesül (az ÉS operátor itt mindent kinullázna)
@@ -72,11 +73,17 @@ class PdfNezet(QWidget):
         # ResizeMode.Stretch: a megadott oszlopot úgy nyújtja meg, hogy kitöltse a táblázatban maradt összes üres helyet
         # setSectionResizeMode: a 0. indexű (első, "A fájl neve") oszlopot rugalmasra állítja, hogy felvegye a szabad helyet
         self.tablazat.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+
         
         # horizontalHeader(): lekéri a táblázat vízszintes fejlécét
         # ResizeMode.ResizeToContents: az oszlop szélességét pontosan akkorára állítja be, amekkora a benne lévő legszélesebb tartalom
-        # setSectionResizeMode: az 1. indexű (második, "Művelet") oszlopot csak akkorára nyitja, hogy a "Törlés" gombok pont elférjenek benne
+        # setSectionResizeMode: az 1. indexű (második, "Előrehaladás") oszlopot csak akkorára nyitja, hogy a százalékok pont elférjenek benne
         self.tablazat.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+
+        # horizontalHeader(): lekéri a táblázat vízszintes fejlécét
+        # ResizeMode.ResizeToContents: az oszlop szélességét pontosan akkorára állítja be, amekkora a benne lévő legszélesebb tartalom
+        # setSectionResizeMode: az 2. indexű (második, "Művelet") oszlopot csak akkorára nyitja, hogy a "Törlés" gombok pont elférjenek benne
+        self.tablazat.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
 
         # verticalHeader().setVisible(False): elrejti a sorok automatikus számozását jelző függőleges fejlécet a bal oldalon
         self.tablazat.verticalHeader().setVisible(False)
@@ -121,20 +128,31 @@ class PdfNezet(QWidget):
             
             # enumerate: végigmegy a listán, és minden lépésben egyszerre adja vissza a sor indexét és magát a fájl nevét
             for sor_index, fajl_nev in enumerate(lista):
+                # 0. oszlop
                 # QTableWidgetItem: létrehoz egy egyszerű táblázatcellát a fájl nevével
                 elem = QTableWidgetItem(fajl_nev)
                 # setItem: beteszi a létrehozott cellát az aktuális sorba, az 1. oszlopba (0-s index)
                 self.tablazat.setItem(sor_index, 0, elem)
+
+                # 1. oszlop (Előrehaladás)
+                haladas_szoveg = KvizKiertekelo.haladas_szazalek_lekerese(self.temakor_neve, fajl_nev)
+                # QTableWidgetItem: létrehoz egy táblázatcellát a haladás százalékos szövegével
+                haladas_elem = QTableWidgetItem(haladas_szoveg)
+                # setTextAlignment: beállítja a cellában a szöveg igazítását
+                # az AlignmentFlag.AlignCenter vízszintesen és függőlegesen is pontosan középre zárja a szöveget
+                haladas_elem.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                # setItem: beteszi a létrehozott cellát az aktuális sorba, a 2. oszlopba (1-es index)
+                self.tablazat.setItem(sor_index, 1, haladas_elem)
+
+                # 2. oszlop
                 # létrehoz egy egyedi "Törlés" gombot az adott sorhoz
                 torles_gomb = QPushButton("Törlés")
-                
                 # clicked.connect: összeköti a gombkattintás eseményét a fájltörlő metódussal
                 # partial: paraméterként "belefagyasztja" a fájl nevét ebbe a kattintás eseménybe
                 # erre azért van szükség, hogy a függvény meghívásakor a gomb tudja, pontosan melyik sor fájlját kell törölnie
                 torles_gomb.clicked.connect(partial(self._pdf_torlese, fajl_nev))
-                
-                # setCellWidget: a törlés gombot (widgetet) beleteszi a táblázat aktuális sorának 2. oszlopába (1-es index)
-                self.tablazat.setCellWidget(sor_index, 1, torles_gomb)
+                # setCellWidget: a törlés gombot (widgetet) beleteszi a táblázat aktuális sorának 3. oszlopába (2-es index)
+                self.tablazat.setCellWidget(sor_index, 2, torles_gomb)
                 
     def _pdf_hozzadasa(self) -> None:
         # QFileDialog.getOpenFileName: megnyit egy beépített, operációs rendszer szintű fájlválasztó ablakot
