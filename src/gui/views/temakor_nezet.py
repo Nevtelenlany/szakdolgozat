@@ -61,6 +61,7 @@ class TemakorNezet(QWidget):
         self.kviz_gomb = QPushButton("Kvíz generálás")
         self.atnevezes_gomb = QPushButton("Témakör átnevezése")
         self.torles_gomb = QPushButton("Témakör törlése")
+        self.torles_gomb.setToolTip("Ez a művelet véglegesen törli a témakört, az összes feltöltött PDF-et és az adatbázist!")
         self.fomenu_gomb = QPushButton("Vissza a főmenübe")
 
         # gombok listába rendezése, hogy egyetlen ciklussal könnyebb legyen iterálni rajtuk

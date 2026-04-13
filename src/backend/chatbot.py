@@ -54,7 +54,7 @@ class ChatBot:
 
     def _valasz_generalasa(self, utasitas: str) -> str:
         eredmeny = self.kliens.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-pro-latest", #gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
             contents=[utasitas],
             config=types.GenerateContentConfig(temperature=0.1) # modell kreativitása
         )

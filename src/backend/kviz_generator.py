@@ -64,7 +64,7 @@ class KvizGenerator:
         
         prompt = self._temakor_prompt_keszites(eredmeny_szoveg["szoveg"])
         api_valasz = self.kliens.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-pro-latest", # gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
             contents=prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json")  # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
         )
@@ -127,7 +127,7 @@ class KvizGenerator:
         prompt = self._kviz_prompt_keszites(kivalasztott_temak, kontextus_szoveg)
 
         api_valasz = self.kliens.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-pro-latest", # gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
             contents=prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json") # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
         )

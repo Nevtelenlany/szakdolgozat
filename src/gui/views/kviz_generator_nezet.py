@@ -98,6 +98,7 @@ class KvizGeneratorNezet(QWidget):
         
         # QSlider: létrehoz egy csúszkát, a Qt.Orientation.Horizontal paraméter megadja, hogy az vízszintes tájolású legyen
         self.csuszka = QSlider(Qt.Orientation.Horizontal)
+        self.csuszka.setToolTip("Állítsd be a kérdések maximális számát. A tényleges kérdésszám a tananyag hosszától is függhet.")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
         self.csuszka.setObjectName("QuizSlider")
         self.csuszka.setRange(1, 50) # beállítja a minimum és maximum értéket
@@ -178,6 +179,7 @@ class KvizGeneratorNezet(QWidget):
     def _kiertekelo_felulet_beallitasa(self) -> None:
         # létrehoz egy gombot a kvíz beküldéséhez és kiértékeléséhez
         self.kiertekel_gomb = QPushButton("Kvíz beküldése és értékelése")
+        self.kiertekel_gomb.setToolTip("A válaszok értékelése, pontszámítás és a magyarázatok megjelenítése.")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
         self.kiertekel_gomb.setObjectName("GenerateButton")
         # clicked.connect: ha rákattintanak a gombra, lefuttatja a self.kviz_kiertekelese metódust

@@ -98,6 +98,7 @@ class PdfNezet(QWidget):
     def _gombok_beallitasa(self) -> None:
         # QPushButton: kattintható gomb a fájl feltöltéséhez
         self.hozzadas_gomb = QPushButton("Új PDF hozzáadása")
+        self.hozzadas_gomb.setToolTip("Új tananyag feltöltése és feldolgozása a tudásbázisba (ez a fájlmérettől függően eltarthat egy ideig).")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
         self.hozzadas_gomb.setObjectName("ActionButton")
         # clicked.connect: ha rákattintanak a gombra, lefuttatja a PDF hozzáadását végző metódust
