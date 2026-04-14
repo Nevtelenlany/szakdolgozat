@@ -1,7 +1,7 @@
 from pathlib import Path
 from PyQt6.QtWidgets import (QPushButton, QVBoxLayout, QWidget, QLabel, 
                              QInputDialog, QApplication, QHBoxLayout, 
-                             QSizePolicy, QScrollArea, QGridLayout)
+                             QSizePolicy, QScrollArea, QGridLayout, QMessageBox)
 from PyQt6.QtCore import pyqtSignal, Qt, QSize
 from PyQt6.QtGui import QIcon
 
@@ -127,9 +127,14 @@ class FomenuNezet(QWidget):
         # és egyből ellenőrzi, hogy a felhasználó rányomott-e az OK-ra és nem hagyta-e teljesen üresen a mezőt
         if ok and (tiszta_szoveg := szoveg.strip()):
             # meghívja a háttérlogikát, ami létrehozza a mappát az új témakörnek
-            self.backend.temakor_letrehozasa(tiszta_szoveg)
-            # frissíti a képernyőt, hogy az új gomb azonnal megjelenjen (a rács újraépítésével)
-            self.kepernyo_frissitese()
+            siker, uzenet =self.backend.temakor_letrehozasa(tiszta_szoveg)
+
+            if siker:
+                # frissíti a képernyőt, hogy az új gomb azonnal megjelenjen (a rács újraépítésével)
+                self.kepernyo_frissitese()
+            else:
+                # ha hiba volt egy ablakban kiírja a backendtől kapott hibaüzenetet
+                QMessageBox.warning(self, "Hiba a létrehozás során", uzenet)
             
     def kepernyo_frissitese(self) -> None:
         # lekéri a létező témakörök (mappák) nevét egy listában a háttérlogikából

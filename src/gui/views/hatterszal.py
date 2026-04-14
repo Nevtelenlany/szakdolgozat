@@ -45,8 +45,18 @@ class KvizHatterszal(QThread):
             # ha nincs internet, vagy nem elérhető a Google szervere
             self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni az AI szerveréhez.")
         except Exception as e:
-            # általános hibafogó: minden egyéb, nem várt futási hibát elkap, megakadályozva a program összeomlását
-            self.hiba_tortent.emit(f"Ismeretlen hiba történt a kvíz generálása során: {e}")
+            # csupa kisbetűssé alakítjuk a biztonságosabb keresés érdekében
+            hiba_uzenet = str(e).lower() 
+            
+            # kiszűri az érvénytelen API kulcs miatti hibákat
+            if "api key" in hiba_uzenet or "api_key" in hiba_uzenet or "400" in hiba_uzenet or "403" in hiba_uzenet:
+                self.hiba_tortent.emit("Érvénytelen API kulcs! Kérlek, ellenőrizd a megadott GOOGLE_API_KEY-t a .env fájlban.")
+            # kiszűri a nyers hálózati hibákat
+            elif "11001" in hiba_uzenet or "getaddrinfo" in hiba_uzenet or "nameresolutionerror" in hiba_uzenet:
+                self.hiba_tortent.emit("Nincs internetkapcsolat! Kérlek, ellenőrizd a hálózatot, majd próbáld újra.")      
+            # minden egyéb, nem várt futási hibát elkap
+            else:
+                self.hiba_tortent.emit(f"Ismeretlen hiba történt a kvíz generálása során: {e}")
 
 # QThread: a PyQt6 beépített szálkezelője
 # generálás idejére (ami az internetes API miatt több másodperc is lehet) leválasztja a folyamatot a főszálról
@@ -76,9 +86,21 @@ class ChatbotHatterszal(QThread):
         except ValueError as ve:
             self.hiba_tortent.emit(f"Konfigurációs vagy adathiba: {ve}")
         except ConnectionError:
-            self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni a Google Gemini szervereihez.")
+            # ha nincs internet, vagy nem elérhető a Google szervere
+            self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni az AI szerveréhez.")
         except Exception as e:
-            self.hiba_tortent.emit(f"Futási hiba történt a háttérfolyamatban: {e}")
+            # csupa kisbetűssé alakítjuk a biztonságosabb keresés érdekében
+            hiba_uzenet = str(e).lower() 
+            
+            # kiszűri az érvénytelen API kulcs miatti hibákat
+            if "api key" in hiba_uzenet or "api_key" in hiba_uzenet or "400" in hiba_uzenet or "403" in hiba_uzenet:
+                self.hiba_tortent.emit("Érvénytelen API kulcs! Kérlek, ellenőrizd a megadott GOOGLE_API_KEY-t a .env fájlban.")
+            # kiszűri a nyers hálózati hibákat
+            elif "11001" in hiba_uzenet or "getaddrinfo" in hiba_uzenet or "nameresolutionerror" in hiba_uzenet:
+                self.hiba_tortent.emit("Nincs internetkapcsolat! Kérlek, ellenőrizd a hálózatot, majd próbáld újra.")      
+            # minden egyéb, nem várt futási hibát elkap
+            else:
+                self.hiba_tortent.emit(f"Ismeretlen hiba történt a kvíz generálása során: {e}")
 
 # QThread: a PyQt6 beépített szálkezelője
 # PDF-ek feldolgozása és vektorizálása idejére leválasztja a folyamatot a főszálról
@@ -104,6 +126,19 @@ class PdfHatterszal(QThread):
             self.backend.pdf_hozzadasa(self.utvonal)
             # .emit(): ha minden sikeres volt, elküldi a feldolgozas_kesz jelet a grafikus felület felé
             self.feldolgozas_kesz.emit()
+        except ConnectionError:
+            # ha nincs internet, vagy nem elérhető a Google szervere
+            self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni az AI szerveréhez.")
         except Exception as e:
-            # általános hibafogó: minden nem várt futási hibát elkap, és visszaküldi a hibaüzenetet a felületnek
-            self.hiba_tortent.emit(f"Hiba a PDF feldolgozása során: {str(e)}")
+            # csupa kisbetűssé alakítjuk a biztonságosabb keresés érdekében
+            hiba_uzenet = str(e).lower() 
+            
+            # kiszűri az érvénytelen API kulcs miatti hibákat
+            if "api key" in hiba_uzenet or "api_key" in hiba_uzenet or "400" in hiba_uzenet or "403" in hiba_uzenet:
+                self.hiba_tortent.emit("Érvénytelen API kulcs! Kérlek, ellenőrizd a megadott GOOGLE_API_KEY-t a .env fájlban.")
+            # kiszűri a nyers hálózati hibákat
+            elif "11001" in hiba_uzenet or "getaddrinfo" in hiba_uzenet or "nameresolutionerror" in hiba_uzenet:
+                self.hiba_tortent.emit("Nincs internetkapcsolat! Kérlek, ellenőrizd a hálózatot, majd próbáld újra.")      
+            # minden egyéb, nem várt futási hibát elkap
+            else:
+                self.hiba_tortent.emit(f"Ismeretlen hiba történt a kvíz generálása során: {e}")

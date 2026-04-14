@@ -12,11 +12,16 @@ class ChatBot:
     def __init__(self, adatbazis_utvonal: str) -> None:
         load_dotenv()  # .env fájl megkereséséhez és betöltéséhez 
         api_kulcs = os.getenv('GOOGLE_API_KEY')  # megkeresi a GOOGLE_API_KEY-t   
-        self.kliens = genai.Client(api_key=api_kulcs)  # átadja az API kulcsot a kliensnek    
-        
+        # átadja az API kulcsot a kliensnek   
+        # csak akkor hozza létre, ha van kulcs
+        self.kliens = genai.Client(api_key=api_kulcs) if api_kulcs else None 
         self.adatbazis_utvonal = adatbazis_utvonal  # példányváltozó        
 
     def kerdes_feltevese(self, kerdes: str) -> str:
+        # ellenőrzi, hogy van-e kliens (API kulcs)
+        if not self.kliens:
+            raise ValueError("Nincs API kulcs megadva! Kérlek, pótold a .env fájlban.")
+        
         # feldolgozza a kérdést és visszaadja a választ
         vektor = self._vektorizalas(kerdes)
         kontextus = self._kontextus_lekeres(vektor)
@@ -50,12 +55,27 @@ class ChatBot:
             1. A válaszod megfogalmazásakor KÖTELEZŐ hivatkoznod a forrás(ok)ra!
             2. A mondatok vagy a válaszod végén zárójelben tüntesd fel a forrásfájl nevét.
             3. Ha a fenti kontextus üres, vagy nem tartalmazza a választ a kérdésre, akkor írd le, hogy a feltöltött tananyagban nem találtál erre releváns részt (ne találj ki információkat a kontextuson kívülről).
+            4. Ha a felhasználó kérdése értelmetlen karaktersorozat, vagy nyilvánvalóan nem egy értelmes kérdés, kérd meg udvariasan, hogy fogalmazza meg pontosabban.
         """).strip() # eltávolítja az üres sorokat és szóközöket a szöveg legelejéről és legvégéről
 
     def _valasz_generalasa(self, utasitas: str) -> str:
-        eredmeny = self.kliens.models.generate_content(
-            model="gemini-pro-latest", #gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
-            contents=[utasitas],
-            config=types.GenerateContentConfig(temperature=0.1) # modell kreativitása
-        )
-        return eredmeny.text
+        modellek = ["gemini-3.1-flash-lite-preview", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-3.1-pro-preview", "gemini-2.5-pro"]
+        utolso_hiba = None
+
+        for modell in modellek:
+            try:
+                print(f"[Chatbot] Próbálkozás a következő modellel: {modell}...")
+                eredmeny = self.kliens.models.generate_content(
+                    model=modell,
+                    contents=[utasitas],
+                    config=types.GenerateContentConfig(temperature=1.0) # modell kreativitása
+                )
+                print(f"[Chatbot] Sikeres válasz a {modell} modelltől!")
+                return eredmeny.text
+            
+            except Exception as e:
+                print(f"[Chatbot] Hiba a {modell} modellnél: {e}")
+                utolso_hiba = e
+
+        # ha a ciklus lefutott, és mindegyik modell hibát dobott
+        raise RuntimeError(f"Az összes AI modell túlterhelt vagy elérhetetlen. Utolsó hiba: {utolso_hiba}")

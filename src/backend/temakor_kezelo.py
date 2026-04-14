@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+import re
 
 from backend.pdf_feldolgozo import PdfFeldolgozo
 
@@ -25,14 +26,44 @@ class TemakorKezelo:
         # iterdir() végigmegy az alap_utvonalon található összes elemen
         # is_dir() kiszűri, hogy csak a mappákat (a témakörök neveit) kapjuk meg, fájlokat ne
         return [mappa.name for mappa in self.alap_utvonal.iterdir() if mappa.is_dir()]
+    
+    def _nev_validalasa(self, nev: str) -> tuple[bool, str]:
+        # ellenőrzi a hosszúságát
+        if len(nev) > 200:
+            return False, "A név túl hosszú (maximum 200 karakter lehet)."
 
-    def temakor_letrehozasa(self, temakor_neve: str) -> None:
+        # fájlrendszer által tiltott karakterek szűrése regex segítségével
+        tiltott_karakterek = r'[<>:"/\\|?*]'
+        if re.search(tiltott_karakterek, nev):
+            return False, 'A név nem tartalmazhatja a következő karaktereket:\n< > : " / \\ | ? *'
+     
+        # windows által fenntartott nevek szűrése
+        fenntartott_nevek = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+        if nev.upper() in fenntartott_nevek:
+            return False, "Ez a név az operációs rendszer által fenntartott. Kérlek, válassz másikat!"
+        return True, ""
+    
+    def temakor_letrehozasa(self, temakor_neve: str) -> tuple[bool, str]:
+
+        siker, uzenet = self._nev_validalasa(temakor_neve)
+        if not siker:
+            return False, uzenet
+
         utvonal = self.alap_utvonal / temakor_neve
-        # parents=True: ha az útvonalban szereplő mappák még nem léteznek, akkor automatikusan létrehozza azokat
-        # exist_ok=True: ha a mappák már léteznek, akkor nem történik semmi (nem dob hibát)
-        utvonal.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            # ténylegesen létrehozzuk a mappát a fájlrendszerben
+            utvonal.mkdir(parents=True, exist_ok=False)
+            return True, "Témakör sikeresen létrehozva."
+        except OSError as e:
+            return False, f"Fájlrendszeri hiba a létrehozás során: {e}"
 
     def temakor_atnevezese(self, regi_temakor_neve: str, uj_temakor_neve: str) -> tuple[bool, str]:
+
+        siker, uzenet = self._nev_validalasa(uj_temakor_neve)
+        if not siker:
+            return False, uzenet
+            
         regi_utvonal = self.alap_utvonal / regi_temakor_neve
         uj_utvonal = self.alap_utvonal / uj_temakor_neve
 

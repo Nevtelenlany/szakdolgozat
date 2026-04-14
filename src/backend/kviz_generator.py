@@ -17,9 +17,15 @@ class KvizGenerator:
     def __init__(self) -> None:
         load_dotenv()  # .env fájl megkereséséhez és betöltéséhez 
         api_kulcs = os.getenv('GOOGLE_API_KEY')  # megkeresi a GOOGLE_API_KEY-t   
-        self.kliens = genai.Client(api_key=api_kulcs)  # átadja az API kulcsot a kliensnek 
+        # átadja az API kulcsot a kliensnek   
+        # csak akkor hozza létre, ha van kulcs
+        self.kliens = genai.Client(api_key=api_kulcs) if api_kulcs else None 
 
     def generalj_kvizt(self, temakor_neve: str, fajl_neve: str, maximum_kerdes: int) -> list[dict]:
+        # ellenőrzi, hogy van-e kliens (API kulcs)
+        if not self.kliens:
+            raise ValueError("Nincs API kulcs megadva! Kérlek, pótold a .env fájlban.")
+        
         # lekéri a szükséges fájlok elérési útját a témakör és a fájlnév alapján
         adatbazis_utvonal, json_utvonal = self._utvonalak_lekerese(temakor_neve, fajl_neve)
         # betölti a tanulási folyamatot (json), vagy létrehozza, ha még nincs
@@ -54,7 +60,7 @@ class KvizGenerator:
         with open(json_utvonal, 'r', encoding='utf-8') as fajl: 
             # a json.load() beolvassa a fájl tartalmát, és átalakítja szótárrá
             return json.load(fajl)
-
+        
     def _temakorok_letrehozasa(self, fajl_neve: str, adatbazis_utvonal: Path, json_utvonal: Path) -> None:
         eredmeny_szoveg = hatter_teljes_szoveg_lekeres(str(adatbazis_utvonal), fajl_neve)
 
@@ -63,11 +69,27 @@ class KvizGenerator:
             raise ValueError(eredmeny_szoveg["uzenet"])
         
         prompt = self._temakor_prompt_keszites(eredmeny_szoveg["szoveg"])
-        api_valasz = self.kliens.models.generate_content(
-            model="gemini-pro-latest", # gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
-            contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json")  # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
-        )
+        
+        modellek = ["gemini-3.1-flash-lite-preview", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-3.1-pro-preview", "gemini-2.5-pro"]
+        api_valasz = None
+        utolso_hiba = None
+
+        for modell in modellek:
+            try:
+                print(f"[Kvíz Témakör] Próbálkozás a következő modellel: {modell}...")
+                api_valasz = self.kliens.models.generate_content(
+                    model=modell,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json") # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
+                )
+                break
+            except Exception as e:
+                # ha a ciklus lefutott, és mindegyik modell hibát dobott
+                print(f"[Kvíz Témakör] Hiba a {modell} modellnél: {e}")
+                utolso_hiba = e
+        
+        if not api_valasz:
+            raise RuntimeError(f"Nem sikerült kapcsolódni egyik modellhez sem a témaköröknél. Hiba: {utolso_hiba}")
 
         # a json.loads() beolvassa az api_valasz szöveges tartalmát, és átalakítja szótárrá
         temakor_adatok = json.loads(api_valasz.text)
@@ -75,6 +97,9 @@ class KvizGenerator:
         # ".get()" biztonságosan kinyeri a témák listáját a szótárból
         # ha valami hiba történne, vagy nem talál kinyerhető témát, [] üres listát ad vissza
         temakorok_lista = temakor_adatok.get("mikrotemak_listaja", []) 
+
+        if not temakorok_lista:
+            raise ValueError("A feltöltött fájl nem tartalmaz olyan tanulható, vizsgáztatható anyagot, amiből kvízt lehetne generálni (pl. csak egy tájékoztató).")
 
         # végigmegy a temakorok_lista témáin, és mindegyikhez szótárként hozzárendeli ezt: {"valaszok": 5, "elsajatitva": False}
         temak = {tema: {"valaszok": 5, "elsajatitva": False} for tema in temakorok_lista}
@@ -126,11 +151,27 @@ class KvizGenerator:
 
         prompt = self._kviz_prompt_keszites(kivalasztott_temak, kontextus_szoveg)
 
-        api_valasz = self.kliens.models.generate_content(
-            model="gemini-pro-latest", # gemini-2.5-flash, gemini-2.5-pro, gemini-flash-latest
-            contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json") # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
-        )
+        modellek = ["gemini-3.1-flash-lite-preview", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-3.1-pro-preview", "gemini-2.5-pro"]
+        api_valasz = None
+        utolso_hiba = None
+
+        for modell in modellek:
+            try:
+                print(f"[Kvízkérdések] Próbálkozás a következő modellel: {modell}...")
+                api_valasz = self.kliens.models.generate_content(
+                    model=modell,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json") # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
+                )
+                break
+            except Exception as e:
+                print(f"[Kvízkérdések] Hiba a {modell} modellnél: {e}")
+                utolso_hiba = e
+
+        if not api_valasz:
+            # ha a ciklus lefutott, és mindegyik modell hibát dobott
+            raise RuntimeError(f"Kvíz generálása sikertelen, az összes modell elérhetetlen. Hiba: {utolso_hiba}")
+
         # a json.loads() beolvassa az api_valasz szöveges tartalmát, és átalakítja egy Python listává (ami a kvízkérdéseket tartalmazza)
         return json.loads(api_valasz.text)
 
@@ -140,10 +181,11 @@ class KvizGenerator:
                                 Elemezd a lenti megadott tananyagot, és oszd fel jól körülhatárolható, vizsgáztatható mikrotémákra (kulcsfogalmakra, összefüggésekre, tényekre).
                                 SZABÁLYOK:
                                 1. Szűrd ki a bevezető, leíró "rizsát"! Csak olyan specifikus témákat emelj ki, amikből konkrét, egyértelmű kvízkérdéseket lehet írni.
-                                2. Ne nagy, átfogó kategóriákat írj (pl. "Biológia alapjai"), hanem konkrétumokat (pl. "A mitokondrium szerepe a sejtlégzésben", "Az enzimek kulcs-zár modellje").
-                                3. Szerepeltesd a listában a tananyag összes releváns, vizsgáztatható mikrotémáját (mennyiségi korlát nincs, de csak a lényeget emeld ki).
+                                2. Ne nagy, átfogó kategóriákat írj (pl. "Biológia alapjai"), hanem konkrétumokat (pl. "A mitokondrium szerepe a sejtlégzésben").
+                                3. Szerepeltesd a listában a tananyag összes releváns, vizsgáztatható mikrotémáját.
                                 4. KIZÁRÓLAG olyan témákat sorolj fel, amelyek ténylegesen szerepelnek a lenti tananyagban. Ne találj ki újakat!
-                                5. A válaszod KIZÁRÓLAG egy érvényes JSON formátum legyen, pontosan a következő minta alapján:
+                                5. HA A SZÖVEG NEM TARTALMAZ vizsgáztatható tananyagot (pl. csak egy tartalomjegyzék, tematika vagy tájékoztató), akkor a "mikrotemak_listaja" kötelezően legyen egy ÜRES LISTA: []
+                                6. A válaszod KIZÁRÓLAG egy érvényes JSON formátum legyen, pontosan a következő minta alapján:
 
                                 JSON MINTA:
                                 {{

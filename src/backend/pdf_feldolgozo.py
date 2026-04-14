@@ -17,11 +17,21 @@ class PdfFeldolgozo:
     def __init__(self) -> None:
         load_dotenv()  # .env fájl megkereséséhez és betöltéséhez 
         api_kulcs = os.getenv('GOOGLE_API_KEY')  # megkeresi a GOOGLE_API_KEY-t   
-        self.kliens = genai.Client(api_key=api_kulcs)  # átadja az API kulcsot a kliensnek   
+        # átadja az API kulcsot a kliensnek   
+        # csak akkor hozza létre, ha van kulcs
+        self.kliens = genai.Client(api_key=api_kulcs) if api_kulcs else None
     
     def feldolgozas_es_mentes(self, pdf_utvonal: str, temakor_neve: str, fajl_neve: str) -> None:
+        # ellenőrzi, hogy van-e kliens (API kulcs)
+        if not self.kliens:
+            raise ValueError("Nincs API kulcs megadva! Kérlek, pótold a .env fájlban.")
+        
         # PDF feldolgozása
         szoveg = self._pdf_szoveg_kinyerese(pdf_utvonal)
+        # ha a szöveg teljesen üres
+        if not szoveg.strip():
+            raise ValueError("A PDF fájl üres, vagy csak képeket tartalmaz, amiből nem lehet szöveget kinyerni.")
+        
         darabok = self._szoveg_darabolasa(szoveg)
         vektorok = self._vektorok_generalasa(darabok)
         self._adatbazisba_mentes(temakor_neve, fajl_neve, darabok, vektorok)

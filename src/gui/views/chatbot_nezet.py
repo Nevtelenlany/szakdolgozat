@@ -67,6 +67,8 @@ class ChatbotNezet(QWidget):
         self.uzenet_beviteli_mezo.setObjectName("MessageInput")
         # setPlaceholderText: halványszürke szöveget jelenít meg, ami eltűnik, amint a felhasználó gépelni kezd
         self.uzenet_beviteli_mezo.setPlaceholderText("Írd ide a kérdésed...")
+        # karakterlimit beállítása
+        self.uzenet_beviteli_mezo.setMaxLength(1000)
         # returnPressed.connect: összeköti az Enter billentyű lenyomását a self.uzenet_kuldese metódussal
         self.uzenet_beviteli_mezo.returnPressed.connect(self.uzenet_kuldese)
         
