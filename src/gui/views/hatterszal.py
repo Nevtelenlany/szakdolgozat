@@ -79,3 +79,31 @@ class ChatbotHatterszal(QThread):
             self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni a Google Gemini szervereihez.")
         except Exception as e:
             self.hiba_tortent.emit(f"Futási hiba történt a háttérfolyamatban: {e}")
+
+# QThread: a PyQt6 beépített szálkezelője
+# PDF-ek feldolgozása és vektorizálása idejére leválasztja a folyamatot a főszálról
+# ezzel biztosítja, hogy a grafikus felület ne fagyjon le a betöltés alatt
+class PdfHatterszal(QThread):
+    # pyqtSignal: kommunikációs csatornák (jelek), amelyeken keresztül a háttérszál üzeneteket tud küldeni a grafikus felületnek
+    # feldolgozas_kesz: egy jelzés, ami akkor fut le, ha a PDF beolvasása és mentése sikeresen befejeződött
+    feldolgozas_kesz = pyqtSignal()
+    # hiba_tortent: egy szöveget (a hibaüzenetet) fog küldeni, ha valami elromlik
+    hiba_tortent = pyqtSignal(str)
+
+    def __init__(self, backend, utvonal: str) -> None:
+        # super().__init__() meghívja a szülőosztály (QThread) inicializáló metódusát
+        super().__init__()
+        # eltárolja a megkapott paramétereket a példányban (self)
+        self.backend = backend
+        self.utvonal = utvonal
+
+    # run() a QThread beépített metódusa
+    # amikor a főprogram meghívja a .start() parancsot, ez a függvény automatikusan, egy külön háttérszálon fog elindulni
+    def run(self) -> None:
+        try:
+            self.backend.pdf_hozzadasa(self.utvonal)
+            # .emit(): ha minden sikeres volt, elküldi a feldolgozas_kesz jelet a grafikus felület felé
+            self.feldolgozas_kesz.emit()
+        except Exception as e:
+            # általános hibafogó: minden nem várt futási hibát elkap, és visszaküldi a hibaüzenetet a felületnek
+            self.hiba_tortent.emit(f"Hiba a PDF feldolgozása során: {str(e)}")

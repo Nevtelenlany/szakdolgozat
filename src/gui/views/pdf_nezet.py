@@ -6,6 +6,7 @@ from functools import partial
 
 from backend.temakor_kezelo import TemakorKezelo
 from backend.kviz_kiertekelo import KvizKiertekelo
+from gui.views.hatterszal import PdfHatterszal
 
 class PdfNezet(QWidget):
     # inicializálja az osztályt
@@ -166,10 +167,39 @@ class PdfNezet(QWidget):
         # strip() eltávolítja a felesleges szóközöket az útvonal széléről
         # ellenőrzi, hogy a felhasználó tényleg választott-e fájlt, és nem zárta-e be véletlenül az ablakot (vagyis nem üres-e az útvonal)
         if utvonal and (tiszta_utvonal := utvonal.strip()):
-            # meghívja a háttérlogikát, ami átmásolja, darabolja, vektorizálja és elmenti a PDF-et a ChromaDB-be
-            self.backend.pdf_hozzadasa(tiszta_utvonal)
-            # frissíti a táblázatot, hogy az új fájl azonnal megjelenjen a felületen
-            self.kepernyo_frissitese()
+            # setEnabled: letiltja a gombot, hogy a feldolgozás alatt ne lehessen újra rákattintani
+            self.hozzadas_gomb.setEnabled(False)
+            # setText: átírja az eredeti feliratot, vizuális visszajelzést adva a felhasználónak
+            self.hozzadas_gomb.setText("Feldolgozás folyamatban... Kérlek várj!")
+            
+            # példányosítja az új háttérszálat (PdfHatterszal)
+            self.pdf_futar = PdfHatterszal(self.backend, tiszta_utvonal)
+            
+            # .connect(): összeköti a háttérszál sikeres befejezést jelző csatornáját (feldolgozas_kesz) a felületfrissítő metódussal
+            self.pdf_futar.feldolgozas_kesz.connect(self._pdf_sikeres)
+            # .connect(): összeköti a háttérszál hibajelző csatornáját a hibaüzenetet megjelenítő metódussal
+            self.pdf_futar.hiba_tortent.connect(self._pdf_hiba)
+            
+            # start(): elindítja a háttérszál tényleges futását
+            self.pdf_futar.start()
+
+    def _pdf_sikeres(self) -> None:
+        # setEnabled: újra engedélyezi a gombot a sikeres feldolgozás után
+        self.hozzadas_gomb.setEnabled(True)
+        # setText: visszaállítja az eredeti feliratot
+        self.hozzadas_gomb.setText("Új PDF hozzáadása")
+        # meghívja a frissítő metódust, hogy az új fájl megjelenjen a táblázatban
+        self.kepernyo_frissitese()
+        # QMessageBox.information: beépített, sikeres tájékoztató felugró ablak
+        QMessageBox.information(self, "Siker", "A PDF sikeresen feltöltve és feldolgozva!")
+
+    def _pdf_hiba(self, hiba_uzenet: str) -> None:
+        # setEnabled: hiba esetén is újra engedélyezi a gombot, hogy a felhasználó újra próbálkozhasson
+        self.hozzadas_gomb.setEnabled(True)
+        # setText: visszaállítja az eredeti feliratot
+        self.hozzadas_gomb.setText("Új PDF hozzáadása")
+        # QMessageBox.warning: beépített, figyelmeztető felugró ablak a háttérszálból kapott hibaüzenettel
+        QMessageBox.warning(self, "Hiba", hiba_uzenet)
             
     def _pdf_torlese(self, fajl_nev: str) -> None:
         # QMessageBox.question: megjelenít egy beépített felugró ablakot a törlés megerősítéséhez
