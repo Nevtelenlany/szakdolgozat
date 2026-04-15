@@ -82,10 +82,16 @@ class KvizGenerator:
                     contents=prompt,
                     config=types.GenerateContentConfig(response_mime_type="application/json") # arra kényszeríti a modellt, hogy csak JSON formátumot adjon vissza
                 )
-                break
+                break # ha sikeres volt a generálás, azonnal kilép a for ciklusból
+                
             except Exception as e:
-                # ha a ciklus lefutott, és mindegyik modell hibát dobott
-                print(f"[Kvíz Témakör] Hiba a {modell} modellnél: {e}")
+                # csupa kisbetűssé alakítja a hibaüzenetet a könnyebb kulcsszó-keresés érdekében
+                hiba_szoveg = str(e).lower()
+                
+                # ellenőrzi, hogy a hiba a napi API kvóta kimerülése miatt történt-e
+                if "429" in hiba_szoveg or "quota" in hiba_szoveg:
+                    # ha igen, azonnal megszakítja a folyamatot, mert felesleges a többi modellt is végigpróbálni ugyanazzal a kulccsal
+                    raise RuntimeError("A szerver elutasította a kérést. Valószínűleg elérted az ingyenes API kulcs napi (Daily) limitjét! Kérlek, próbáld újra holnap, vagy használj másik kulcsot.")
                 utolso_hiba = e
         
         if not api_valasz:
@@ -125,20 +131,32 @@ class KvizGenerator:
         temakorok_szama = min(len(meg_tanulando), maximum_kerdes) 
         # visszatevés nélkül visszaad 'temakorok_szama' darab véletlenszerű témát a listából
         return random.sample(meg_tanulando, temakorok_szama)
-
-    def _kontextus_lekerese(self, temak: list[str], adatbazis_utvonal: str, fajl_neve: str) -> str:
-
-        # témákat vektorrá alakítja
-        eredmeny = self.kliens.models.embed_content(
-            model="gemini-embedding-001",
-            contents=temak,
-            config=types.EmbedContentConfig(
-                task_type="RETRIEVAL_QUERY", # dokumentumokban való kereséshez
-                output_dimensionality=768 # 768 darab számból áll a vektor
+    
+    def _kontextus_lekerese(self, temak: list[str], adatbazis_utvonal: str, fajl_neve: str) -> str:    
+        try:
+            # témákat vektorrá alakítja
+            eredmeny = self.kliens.models.embed_content(
+                model="gemini-embedding-001",
+                contents=temak,
+                config=types.EmbedContentConfig(
+                    task_type="RETRIEVAL_QUERY", # dokumentumokban való kereséshez
+                    output_dimensionality=768 # 768 darab számból áll a vektor
                 )
-        )
-        # embeddings-ből kinyeri a values-t, amiben a vektor van
-        vektorok = [beagyazas.values for beagyazas in eredmeny.embeddings]
+            )
+            # embeddings-ből kinyeri a values-t, amiben a vektor van
+            vektorok = [beagyazas.values for beagyazas in eredmeny.embeddings]
+            
+        except Exception as e:
+            # csupa kisbetűssé alakítja a hibaüzenetet a könnyebb kulcsszó-keresés érdekében
+            hiba_szoveg = str(e).lower()
+            
+            # ellenőrzi, hogy a Google szervere a túl sok kérés (napi limit) miatt dobott-e hibát
+            if "429" in hiba_szoveg or "quota" in hiba_szoveg or "resource_exhausted" in hiba_szoveg:
+                # ha elfogyott a keret, megszakítja a folyamatot egy beszédes hibaüzenettel a felület felé
+                raise RuntimeError("A szerver elutasította a keresési kérést. Valószínűleg elérted az ingyenes API kulcs napi (Daily) limitjét! Kérlek, próbáld újra holnap, vagy használj másik kulcsot.")
+            else:
+                # minden egyéb hiba esetén továbbdobja az eredeti problémát
+                raise RuntimeError(f"Hiba a témák vektorizálásakor: {e}")
         
         try:
             # témakörökhöz kapcsolódó releváns részek megkeresése
@@ -165,6 +183,12 @@ class KvizGenerator:
                 )
                 break
             except Exception as e:
+                hiba_szoveg = str(e).lower()
+                
+                # ha a napi limit kimerült, megszakítja a folyamatot
+                if "429" in hiba_szoveg or "quota" in hiba_szoveg:
+                    raise RuntimeError("A szerver elutasította a kérést. Valószínűleg elérted az ingyenes API kulcs napi (Daily) limitjét! Kérlek, próbáld újra holnap, vagy használj másik kulcsot.")
+                
                 print(f"[Kvízkérdések] Hiba a {modell} modellnél: {e}")
                 utolso_hiba = e
 

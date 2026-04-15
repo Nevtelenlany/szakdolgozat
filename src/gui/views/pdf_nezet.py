@@ -179,9 +179,40 @@ class PdfNezet(QWidget):
             self.pdf_futar.feldolgozas_kesz.connect(self._pdf_sikeres)
             # .connect(): összeköti a háttérszál hibajelző csatornáját a hibaüzenetet megjelenítő metódussal
             self.pdf_futar.hiba_tortent.connect(self._pdf_hiba)
+            # .connect(): összeköti a háttérszál API korlátot jelző csatornáját a felugró ablakot megjelenítő metódussal
+            self.pdf_futar.kvota_kerdes.connect(self._kvota_kerdes_megjelenitese)
+            # .connect(): összeköti a háttérszál állapotfrissítő csatornáját a gomb setText (szövegátíró) metódusával
+            # így a gomb felirata folyamatosan, dinamikusan mutatja a lassított feldolgozás aktuális haladását
+            self.pdf_futar.allapot_frissites.connect(self.hozzadas_gomb.setText)
             
             # start(): elindítja a háttérszál tényleges futását
             self.pdf_futar.start()
+
+    def _kvota_kerdes_megjelenitese(self) -> None:
+        # QMessageBox.question: megjelenít egy beépített felugró ablakot, amely megkérdezi a felhasználót a lassított folytatásról
+        # paraméterek: szülő widget (self), ablak címe, a kérdés szövege, a megjelenő gombok, az alapértelmezett gomb
+        valasz = QMessageBox.question(
+            self,
+            "API Korlát elérése",
+            "A rendszer elérte az ingyenes API kulcs biztonsági korlátját.\n\n"
+            "Szeretnéd, ha a program automatikusan, kisebb darabokban és lassítva folytatná a feldolgozást?\n"
+            "(Ez a PDF méretétől függően hosszabb ideig is eltarthat.)\n\n",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, # | (VAGY) operátorral mindkét gombot hozzáadja az ablakhoz
+            QMessageBox.StandardButton.Yes # az alapértelmezett (kijelölt) gomb az "Igen" (Yes) lesz
+        )
+
+        # ellenőrzi, hogy a felhasználó az "Igen" (Yes) gombra kattintott-e, és az eredményt logikai (True/False) értékként tárolja
+        folytassa = (valasz == QMessageBox.StandardButton.Yes)
+        
+        if folytassa:
+            # setText: ha a felhasználó a folytatás mellett dönt, átírja a gomb feliratát a lassított feldolgozás jelzésére
+            self.hozzadas_gomb.setText("Feldolgozás lassított módban... Kérlek várj!")
+        else:
+            # setText: ha a felhasználó a megszakítás mellett dönt, a gomb felirata a leállást jelzi
+            self.hozzadas_gomb.setText("Feldolgozás megszakítása...")
+
+        # visszaküldi a logikai értéket (True/False) a várakozó háttérszálnak
+        self.pdf_futar.valasz_adas(folytassa)
 
     def _pdf_sikeres(self) -> None:
         # setEnabled: újra engedélyezi a gombot a sikeres feldolgozás után

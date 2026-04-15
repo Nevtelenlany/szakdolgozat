@@ -113,8 +113,8 @@ class TemakorKezelo:
         # f.is_file() ellenőrzi hogy tényleg fájl-e
         return [f.name for f in self.mappa_utvonal.glob("*.pdf") if f.is_file()]
 
-    def pdf_hozzadasa(self, forras_utvonal: str | Path) -> None:
-        # ha nincs kiválasztott témakör, kilépünk a folyamatból
+    def pdf_hozzadasa(self, forras_utvonal: str | Path, kerdes_callback=None, allapot_callback=None) -> None:
+        # ha nincs kiválasztott témakör, kilép a folyamatból
         if not self.temakor_neve: 
             return
             
@@ -122,7 +122,19 @@ class TemakorKezelo:
         # name levágja az útvonalat de megtartja a fájl nevét
         fajl_neve = forras_utvonal.name
         self._masol_fizikai_fajlt(forras_utvonal, fajl_neve)
-        self._vektorizalas_es_mentes(forras_utvonal, fajl_neve)
+        
+        
+        try:
+            # elindítja a dokumentum darabolását, vektorizálását és a ChromaDB-be történő mentését
+            # továbbítva a felületi kommunikációért felelős callback (visszahívó) függvényeket a feldolgozónak
+            self._vektorizalas_es_mentes(forras_utvonal, fajl_neve, kerdes_callback, allapot_callback)
+            
+        except Exception as e:
+            # ha a vektorizálás vagy a mentés bármilyen okból megszakad
+            # a program letörli az imént bemásolt fizikai PDF fájlt a rendszerből
+            self._torol_fizikai_fajlt(fajl_neve)
+            # továbbdobja a kivételt a felület felé, hogy az megjeleníthesse az eredeti hibaüzenetet a felhasználónak
+            raise e
 
     def _masol_fizikai_fajlt(self, forras_utvonal: Path, fajl_neve: str) -> None:
         # parents=True: ha az útvonalban szereplő mappák még nem léteznek, akkor automatikusan létrehozza azokat
@@ -134,8 +146,8 @@ class TemakorKezelo:
         # shutil.copy átmásolja a fájlt a forrásból a program célmappájába
         shutil.copy(forras_utvonal, cel_utvonal)
 
-    def _vektorizalas_es_mentes(self, forras_utvonal: Path, fajl_neve: str) -> None:
-        self.pdf_feldolgozo.feldolgozas_es_mentes(str(forras_utvonal), self.temakor_neve, fajl_neve)
+    def _vektorizalas_es_mentes(self, forras_utvonal: Path, fajl_neve: str, kerdes_callback=None, allapot_callback=None) -> None:
+        self.pdf_feldolgozo.feldolgozas_es_mentes(str(forras_utvonal), self.temakor_neve, fajl_neve, kerdes_callback, allapot_callback)
 
     def pdf_torlese(self, fajl_neve: str) -> None:
         # ha nincs kiválasztott témakör, kilépünk a folyamatból

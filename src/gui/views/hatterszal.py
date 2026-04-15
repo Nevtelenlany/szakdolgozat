@@ -1,4 +1,5 @@
 import json
+import threading
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from backend.chatbot import ChatBot
@@ -33,6 +34,10 @@ class KvizHatterszal(QThread):
             
             # .emit(): ha minden sikeres volt, elküldi a kviz_kesz jelet a grafikus felület felé, és átadja benne a legenerált kvíz adatait
             self.kviz_kesz.emit(kviz_json)
+
+        except RuntimeError as e:
+            # ezt a hibát dobja a generátor, ha a modellek elérhetetlenek, vagy kimerült a napi API kvóta
+            self.hiba_tortent.emit(str(e))
 
         except ValueError as hiba:
             # ha a megadott adatokkal volt gond, elküldi a hiba_tortent jelet a hibaüzenettel
@@ -111,6 +116,12 @@ class PdfHatterszal(QThread):
     feldolgozas_kesz = pyqtSignal()
     # hiba_tortent: egy szöveget (a hibaüzenetet) fog küldeni, ha valami elromlik
     hiba_tortent = pyqtSignal(str)
+    # kvota_kerdes: egy jelzés, ami akkor fut le, ha a program eléri az API percenkénti limitjét
+    # jelezve a főszálnak, hogy kérdezze meg a felhasználót a lassított folytatásról
+    kvota_kerdes = pyqtSignal()
+    # allapot_frissites: egy szöveget (az aktuális feldolgozási állapotot) fog küldeni a felületnek
+    # hogy a hosszú várakozási idők alatt is folyamatosan nyomon követhető legyen a haladás
+    allapot_frissites = pyqtSignal(str)
 
     def __init__(self, backend, utvonal: str) -> None:
         # super().__init__() meghívja a szülőosztály (QThread) inicializáló metódusát
@@ -118,14 +129,21 @@ class PdfHatterszal(QThread):
         # eltárolja a megkapott paramétereket a példányban (self)
         self.backend = backend
         self.utvonal = utvonal
+        # háttérszál megállításáért és újraindításáért felelős szinkronizációs eszköz 
+        self.valasz_megerkezett = threading.Event()
+        # eltárolja a felhasználó döntését (True/False), hogy folytatódhat-e a feldolgozás lassított módban
+        self.folytatas_engedelyezve = False
 
     # run() a QThread beépített metódusa
     # amikor a főprogram meghívja a .start() parancsot, ez a függvény automatikusan, egy külön háttérszálon fog elindulni
     def run(self) -> None:
         try:
-            self.backend.pdf_hozzadasa(self.utvonal)
+            self.backend.pdf_hozzadasa(self.utvonal, kerdes_callback=self._kerdes_kezelo, allapot_callback=self.allapot_frissites.emit)
             # .emit(): ha minden sikeres volt, elküldi a feldolgozas_kesz jelet a grafikus felület felé
             self.feldolgozas_kesz.emit()
+        except RuntimeError as e:
+            # hibát dob, ha a felhasználó a "Nem"-re nyomott
+            self.hiba_tortent.emit(str(e))
         except ConnectionError:
             # ha nincs internet, vagy nem elérhető a Google szervere
             self.hiba_tortent.emit("Hálózati hiba: Nem sikerült kapcsolódni az AI szerveréhez.")
@@ -142,3 +160,15 @@ class PdfHatterszal(QThread):
             # minden egyéb, nem várt futási hibát elkap
             else:
                 self.hiba_tortent.emit(f"Ismeretlen hiba történt a kvíz generálása során: {e}")
+                
+    # ezt a függvényt hívja meg a PDF feldolgozó, amikor eléri az API limitet
+    def _kerdes_kezelo(self) -> bool:
+        self.valasz_megerkezett.clear() # alapállapotba állítja a jelzőeseményt
+        self.kvota_kerdes.emit() # szól a főszálnak (ablaknak), hogy jelenítse meg a felugró ablakot
+        self.valasz_megerkezett.wait() # a háttérszál itt megáll és várakozik, amíg a felhasználó nem választ
+        return self.folytatas_engedelyezve
+
+    # ezt a függvényt a grafikus felület (GUI) hívja meg, miután a felhasználó választott
+    def valasz_adas(self, folytassa: bool) -> None:
+        self.folytatas_engedelyezve = folytassa
+        self.valasz_megerkezett.set() # jelzést ad, ami újraindítja a várakozó háttérszálat
