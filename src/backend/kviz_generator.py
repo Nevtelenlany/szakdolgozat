@@ -237,8 +237,8 @@ class KvizGenerator:
                                 3. A válaszod KIZÁRÓLAG egy érvényes JSON lista legyen, annyi elemmel, ahány kérdést kértem.
                                 4. Olyan feladattípust válassz az adott témakörhöz, amivel azt a leglogikusabban számon lehet kérni.
                                 5. 'parositos' (párosítás) típus esetén: SOHA ne vágj ketté egy összefüggő mondatot! Csak akkor használd ezt a típust, ha egyértelmű párokat találsz a szövegben (pl. fogalom és a hozzá tartozó definíció, évszám és esemény).
-6. 'sorbarendezos' (sorbarendezés) típus esetén: KIZÁRÓLAG akkor használd, ha a tananyagban egyértelmű időrendiség, logikai sorrend vagy egy folyamat lépései szerepelnek. Ne rendeztesd sorba a szöveg egymás után következő, de független bekezdéseit!
-7. 'rovid_valasz' (rövid válasz) típus esetén: A kérdés csak olyan egyértelmű fogalomra vagy tényre vonatkozhat, amire 1-2 szavas, egzakt válasz adható. Ne tegyél fel olyan kérdést, amit többféleképpen is meg lehet fogalmazni!
+                                6. 'sorbarendezos' (sorbarendezés) típus esetén: KIZÁRÓLAG akkor használd, ha a tananyagban egyértelmű időrendiség, logikai sorrend vagy egy folyamat lépései szerepelnek. Ne rendeztesd sorba a szöveg egymás után következő, de független bekezdéseit!
+                                7. 'rovid_valasz' (rövid válasz) típus esetén: A kérdés csak olyan egyértelmű fogalomra vagy tényre vonatkozhat, amire 1-2 szavas, egzakt válasz adható. Ne tegyél fel olyan kérdést, amit többféleképpen is meg lehet fogalmazni!
                                 8. Tartsd szem előtt, hogy KIZÁRÓLAG a lenti tananyag tartalmát kell számon kérned, ne használj külső tudást!
                                 9. Használd vegyesen a következő típusokat a JSON séma alapján:
 
