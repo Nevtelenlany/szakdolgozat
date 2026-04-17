@@ -73,7 +73,7 @@ class TemakorNezet(QWidget):
             # addWidget: hozzáadja az aktuális gombot a függőleges elrendezéshez
             bal_menu_elrendezes.addWidget(gomb)
             # setObjectName: ez alapján lehet hivatkozni a gombokra a stíluslapokban (QSS)
-            gomb.setObjectName("MenuButton")
+            gomb.setObjectName("MenuGomb")
 
         # addStretch(): egy rugalmas, üres teret ad az elrendezés aljához
         # ez kitölti a maradék üres helyet lefelé, így feltolja a gombokat szorosan a képernyő tetejére
@@ -82,7 +82,7 @@ class TemakorNezet(QWidget):
         # létrehoz egy üres widgetet (tárolót), ami a teljes bal menüt magába foglalja
         self.bal_menu_doboz = QWidget()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.bal_menu_doboz.setObjectName("LeftMenuWidget")
+        self.bal_menu_doboz.setObjectName("BalOldaliMenuPanel")
         # setLayout: beállítja a gombokat tartalmazó függőleges elrendezést a tárolóba
         self.bal_menu_doboz.setLayout(bal_menu_elrendezes)
         
@@ -100,13 +100,13 @@ class TemakorNezet(QWidget):
         # setAlignment: pontosan középre zárja a szöveget a dobozán belül
         self.cimke.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.cimke.setObjectName("MainTitle")
+        self.cimke.setObjectName("FoCimsor")
         # hozzáadja a címet a jobb oldali elrendezéshez
         jobb_oldal_elrendezes.addWidget(self.cimke)
 
         udvozlo_szoveg = QLabel("Válassz a bal oldali menüből!")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        udvozlo_szoveg.setObjectName("EmptyText2")
+        udvozlo_szoveg.setObjectName("UresAllapotSzoveg")
         # setSizePolicy: dinamikusan kitölti a rendelkezésre álló üres helyet vízszintesen és függőlegesen is, hogy a szöveg középre kerüljön
         udvozlo_szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         # setAlignment: pontosan középre zárja a szöveget a dobozán belül

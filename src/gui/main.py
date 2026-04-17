@@ -9,8 +9,8 @@ szulo_mappa = Path(__file__).resolve().parent.parent
 # így hiba nélkül be tudja importálni a 'backend' és 'gui' mappákban lévő saját modulokat
 sys.path.append(str(szulo_mappa))
 
-# ez a feltétel biztosítja, hogy a kód csak akkor fusson le, ha ezt a fájlt közvetlenül indítják el
-# tehát megakadályozza, hogy véletlenül elinduljon a program, ha ezt a fájlt egy másik modulba importálják
+# ez biztosítja, hogy a kód csak akkor fusson le, ha ezt a fájlt közvetlenül indítják el
+#  megakadályozza, hogy véletlenül elinduljon a program, ha ezt a fájlt egy másik modulba importálják
 if __name__ == '__main__':
     from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
     

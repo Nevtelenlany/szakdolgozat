@@ -13,70 +13,70 @@ class KerdesKiertekelo(ABC):
 class EgyvalaszosKiertekelo(KerdesKiertekelo):
     def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
         # kinyeri a JSON-ből a konkrét helyes választ
-        helyes_valasz = kerdes_adat.get("correct_answer") 
+        helyes_valasz = kerdes_adat.get("helyes_valasz") 
         # ellenőrzi, hogy a felhasználó válasza megegyezik-e a helyes válasszal
         helyes_e = (valasz == helyes_valasz) 
         # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
-        magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.") 
-        return helyes_e, {"explanation": magyarazat, "correct_answer": helyes_valasz}
+        magyarazat = kerdes_adat.get("magyarazat", "Nincs elérhető magyarázat.") 
+        return helyes_e, {"magyarazat": magyarazat, "helyes_valasz": helyes_valasz}
 
 class TobbvalaszosKiertekelo(KerdesKiertekelo):
     def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
         # kinyeri a JSON-ből a konkrét helyes válaszokat halmazként
-        helyes_valaszok = set(kerdes_adat.get("correct_answers", []))
+        helyes_valaszok = set(kerdes_adat.get("helyes_valaszok", []))
         # a felhasználó válaszait halmazzá alakítja
         # ha nincs válasz akkor [] vagyis egy üres listát ad
         felhasznalo_valaszai = set(valasz or []) 
         # ellenőrzi, hogy a felhasználó válasza megegyezik-e a helyes válasszal
         helyes_e = (felhasznalo_valaszai == helyes_valaszok)
         # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
-        magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.")
-        return helyes_e, {"explanation": magyarazat, "correct_answers": list(helyes_valaszok)}
+        magyarazat = kerdes_adat.get("magyarazat", "Nincs elérhető magyarázat.")
+        return helyes_e, {"magyarazat": magyarazat, "helyes_valaszok": list(helyes_valaszok)}
+    
+class ParositosKiertekelo(KerdesKiertekelo):
+    def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
+        # helyes párokat lekéri a JSON-ből, vagy ha valamiért hiányzik, egy üres {} szótárat ad vissza
+        eredeti_parok = kerdes_adat.get("parok", {})
+        # felhasználó válasza. Ha üresen hagyta, akkor egy üres {} szótárat ad vissza
+        valasz_szotar = valasz or {}
+        # ellenőrzi, hogy a felhasználó válasza pontosan megegyezik-e a helyes válasszal
+        helyes_e = (valasz_szotar == eredeti_parok)
+        # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
+        magyarazat = kerdes_adat.get("magyarazat", "Nincs elérhető magyarázat.")
+        return helyes_e, {"magyarazat": magyarazat, "parok": eredeti_parok}
 
+class SorbarendezosKiertekelo(KerdesKiertekelo):
+    def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
+        # helyes sorrendet lekéri a JSON-ből, vagy ha valamiért hiányzik, egy üres listát ad vissza
+        eredeti_sorrend = kerdes_adat.get("sorbarendezett_elemek", [])
+        # felhasználó válasza. Ha üresen hagyta, akkor egy üres [] listát ad vissza
+        valasz_lista = valasz or []
+        # ellenőrzi, hogy a felhasználó válasza pontosan megegyezik-e a helyes válasszal
+        helyes_e = (valasz_lista == eredeti_sorrend)
+        # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
+        magyarazat = kerdes_adat.get("magyarazat", "Nincs elérhető magyarázat.")
+        return helyes_e, {"magyarazat": magyarazat, "sorbarendezett_elemek": eredeti_sorrend}
+    
 class RovidValaszKiertekelo(KerdesKiertekelo):
     def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
         # elfogadott kulcsszavakat lekéri a JSON-ből, és minden szót kisbetűssé alakít a lower() segítségével
-        elfogadott = [k.lower() for k in kerdes_adat.get("accepted_keywords", [])]
+        elfogadott = [k.lower() for k in kerdes_adat.get("elfogadott_kulcsszavak", [])]
         # felhasználó által beírt választ szöveggé alakítja (ha nem írt be semmit, akkor üres szöveget használ)
         # strip() eltávolítja a felesleges szóközöket a szélekről, a lower() pedig kisbetűssé teszi
         beirt = str(valasz or "").strip().lower()
         # megnézi, hogy a beírt szöveg tartalmaz-e legalább egyet az elfogadott kulcsszavak közül. Ha igen, True értéket ad vissza
         helyes_e = any(k in beirt for k in elfogadott)
         # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
-        magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.")
-        return helyes_e, {"explanation": magyarazat, "accepted_keywords": elfogadott}
-
-class ParositosKiertekelo(KerdesKiertekelo):
-    def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
-        # helyes párokat lekéri a JSON-ből, vagy ha valamiért hiányzik, egy üres {} szótárat ad vissza
-        eredeti_parok = kerdes_adat.get("pairs", {})
-        # felhasználó válasza. Ha üresen hagyta, akkor egy üres {} szótárat ad vissza
-        valasz_szotar = valasz or {}
-        # ellenőrzi, hogy a felhasználó válasza pontosan megegyezik-e a helyes válasszal
-        helyes_e = (valasz_szotar == eredeti_parok)
-        # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
-        magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.")
-        return helyes_e, {"explanation": magyarazat, "pairs": eredeti_parok}
-
-class SorbarendezosKiertekelo(KerdesKiertekelo):
-    def kiertekel(self, kerdes_adat: dict, valasz: any) -> tuple[bool, dict]:
-        # helyes sorrendet lekéri a JSON-ből, vagy ha valamiért hiányzik, egy üres listát ad vissza
-        eredeti_sorrend = kerdes_adat.get("ordered_items", [])
-        # felhasználó válasza. Ha üresen hagyta, akkor egy üres [] listát ad vissza
-        valasz_lista = valasz or []
-        # ellenőrzi, hogy a felhasználó válasza pontosan megegyezik-e a helyes válasszal
-        helyes_e = (valasz_lista == eredeti_sorrend)
-        # lekéri a magyarázatot, de beállít egy alapértelmezett szöveget, ha az hiányozna
-        magyarazat = kerdes_adat.get("explanation", "Nincs elérhető magyarázat.")
-        return helyes_e, {"explanation": magyarazat, "ordered_items": eredeti_sorrend}
+        magyarazat = kerdes_adat.get("magyarazat", "Nincs elérhető magyarázat.")
+        return helyes_e, {"magyarazat": magyarazat, "elfogadott_kulcsszavak": elfogadott}
     
 # szótár (térkép), ami összeköti a JSON-ből kapott kérdéstípusokat a megfelelő kiértékelő osztályokkal
 KIERTEKELOK = {
-    "single_choice": EgyvalaszosKiertekelo(),
-    "multiple_choice": TobbvalaszosKiertekelo(),
-    "short_answer": RovidValaszKiertekelo(),
-    "matching": ParositosKiertekelo(),
-    "ordering": SorbarendezosKiertekelo()
+    "egyvalaszos": EgyvalaszosKiertekelo(),
+    "tobbvalaszos": TobbvalaszosKiertekelo(),
+    "rovid_valasz": RovidValaszKiertekelo(),
+    "parositos": ParositosKiertekelo(),
+    "sorbarendezos": SorbarendezosKiertekelo()
 }
 
 class KvizFajlKezelo:
@@ -109,7 +109,7 @@ class KvizKiertekelo:
 
         for kerdes_adat in kviz_adatok:
             k_id = kerdes_adat.get("id")
-            tipus = kerdes_adat.get("type")
+            tipus = kerdes_adat.get("tipus")
             tema = kerdes_adat.get("tema")
             valasz = felhasznalo_valaszai.get(k_id) 
             kiertekelo = KIERTEKELOK.get(tipus)
@@ -119,9 +119,9 @@ class KvizKiertekelo:
                     elert_pont += 1
             else:
                 helyes_e = False
-                visszajelzes = {"explanation": f"Ismeretlen kérdéstípus: {tipus}"}
+                visszajelzes = {"magyarazat": f"Ismeretlen kérdéstípus: {tipus}"}
                 
-            eredmenyek[k_id] = {"helyes": helyes_e, "feedback": visszajelzes, "tema": tema}
+            eredmenyek[k_id] = {"helyes": helyes_e, "visszajelzes": visszajelzes, "tema": tema}
 
         return ossz_pont, elert_pont, eredmenyek
     

@@ -236,9 +236,9 @@ class KvizGenerator:
                                 2. Minden alábbi témakörből pontosan 1 kérdést tegyél fel. A témakörök: {kivalasztott_temak}.
                                 3. A válaszod KIZÁRÓLAG egy érvényes JSON lista legyen, annyi elemmel, ahány kérdést kértem.
                                 4. Olyan feladattípust válassz az adott témakörhöz, amivel azt a leglogikusabban számon lehet kérni.
-                                5. 'matching' (párosítás) típus esetén: SOHA ne vágj ketté egy összefüggő mondatot! Csak akkor használd ezt a típust, ha egyértelmű párokat találsz a szövegben (pl. fogalom és a hozzá tartozó definíció, évszám és esemény).
-                                6. 'ordering' (sorbarendezés) típus esetén: KIZÁRÓLAG akkor használd, ha a tananyagban egyértelmű időrendiség, logikai sorrend vagy egy folyamat lépései szerepelnek. Ne rendeztesd sorba a szöveg egymás után következő, de független bekezdéseit!
-                                7. 'short_answer' (rövid válasz) típus esetén: A kérdés csak olyan egyértelmű fogalomra vagy tényre vonatkozhat, amire 1-2 szavas, egzakt válasz adható. Ne tegyél fel olyan kérdést, amit többféleképpen is meg lehet fogalmazni!
+                                5. 'parositos' (párosítás) típus esetén: SOHA ne vágj ketté egy összefüggő mondatot! Csak akkor használd ezt a típust, ha egyértelmű párokat találsz a szövegben (pl. fogalom és a hozzá tartozó definíció, évszám és esemény).
+6. 'sorbarendezos' (sorbarendezés) típus esetén: KIZÁRÓLAG akkor használd, ha a tananyagban egyértelmű időrendiség, logikai sorrend vagy egy folyamat lépései szerepelnek. Ne rendeztesd sorba a szöveg egymás után következő, de független bekezdéseit!
+7. 'rovid_valasz' (rövid válasz) típus esetén: A kérdés csak olyan egyértelmű fogalomra vagy tényre vonatkozhat, amire 1-2 szavas, egzakt válasz adható. Ne tegyél fel olyan kérdést, amit többféleképpen is meg lehet fogalmazni!
                                 8. Tartsd szem előtt, hogy KIZÁRÓLAG a lenti tananyag tartalmát kell számon kérned, ne használj külső tudást!
                                 9. Használd vegyesen a következő típusokat a JSON séma alapján:
 
@@ -246,47 +246,47 @@ class KvizGenerator:
                                 [
                                   {{
                                     "id": 1,
-                                    "type": "single_choice",
-                                    "question": "Kérdés szövege...",
-                                    "options": ["Rossz 1", "Helyes", "Rossz 2", "Rossz 3"],
-                                    "correct_answer": "Helyes",
-                                    "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
+                                    "tipus": "egyvalaszos",
+                                    "kerdes": "Kérdés szövege...",
+                                    "opciok": ["Rossz 1", "Helyes", "Rossz 2", "Rossz 3"],
+                                    "helyes_valasz": "Helyes",
+                                    "magyarazat": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
                                     "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
                                   }},
                                   {{
                                     "id": 2,
-                                    "type": "multiple_choice",
-                                    "question": "Melyek igazak?",
-                                    "options": ["A", "B", "C", "D"],
-                                    "correct_answers": ["A", "C"],
-                                    "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
+                                    "tipus": "tobbvalaszos",
+                                    "kerdes": "Melyek igazak?",
+                                    "opciok": ["A", "B", "C", "D"],
+                                    "helyes_valaszok": ["A", "C"],
+                                    "magyarazat": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
                                     "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
                                   }},
                                   {{
                                     "id": 3,
-                                    "type": "matching",
-                                    "instruction": "Párosítsd össze a fogalmakat a leírásukkal!",
-                                    "pairs": {{
+                                    "tipus": "parositos",
+                                    "utasitas": "Párosítsd össze a fogalmakat a leírásukkal!",
+                                    "parok": {{
                                       "Fogalom 1": "Definíció 1",
                                       "Fogalom 2": "Definíció 2"
                                     }},
-                                    "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
+                                    "magyarazat": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
                                     "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
                                   }},
                                   {{
                                     "id": 4,
-                                    "type": "ordering",
-                                    "instruction": "Tedd helyes logikai/időrendi sorrendbe!",
-                                    "ordered_items": ["Első lépés", "Második lépés", "Harmadik lépés"],
-                                    "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
+                                    "tipus": "sorbarendezos",
+                                    "utasitas": "Tedd helyes logikai/időrendi sorrendbe!",
+                                    "sorbarendezett_elemek": ["Első lépés", "Második lépés", "Harmadik lépés"],
+                                    "magyarazat": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
                                     "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
                                   }},
                                   {{
                                     "id": 5,
-                                    "type": "short_answer",
-                                    "question": "Mi a pontos neve a...?",
-                                    "accepted_keywords": ["kulcsszó1", "kulcsszó2"],
-                                    "explanation": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
+                                    "tipus": "rovid_valasz",
+                                    "kerdes": "Mi a pontos neve a...?",
+                                    "elfogadott_kulcsszavak": ["kulcsszó1", "kulcsszó2"],
+                                    "magyarazat": "Itt írd le röviden 1-2 mondatban, hogy miért ez a helyes válasz a tananyag alapján.",
                                     "tema": "Ide írd be, hogy melyik témakörhöz tartozik ez a kérdés a listából"
                                   }}
                                 ]

@@ -1,9 +1,7 @@
 from pathlib import Path
-from PyQt6.QtWidgets import (QPushButton, QVBoxLayout, QWidget, QLabel, 
-                             QInputDialog, QApplication, QHBoxLayout, 
-                             QSizePolicy, QScrollArea, QGridLayout, QMessageBox)
+from PyQt6.QtWidgets import (QPushButton, QVBoxLayout, QWidget, QLabel, QInputDialog, QApplication, QHBoxLayout, QSizePolicy, QScrollArea, QGridLayout, QMessageBox)
 from PyQt6.QtCore import pyqtSignal, Qt, QSize
-from PyQt6.QtGui import QIcon
+
 
 from backend.temakor_kezelo import TemakorKezelo
 
@@ -53,14 +51,14 @@ class FomenuNezet(QWidget):
         # setAlignment: pontosan középre zárja a szöveget a dobozán belül
         self.cim_szoveg.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.cim_szoveg.setObjectName("MainTitle")
+        self.cim_szoveg.setObjectName("FoCimsor")
         # hozzáadja a címet a fő elrendezéshez
         self.fobb_elrendezes.addWidget(self.cim_szoveg)
 
         # QLabel: megjeleníti ezt a figyelmeztető szöveget, ha még nincsenek létrehozva témakörök
         self.ures_szoveg = QLabel("Hmm, még nincs létrehozva témakör. Esetleg hozz létre egy újat!")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.ures_szoveg.setObjectName("EmptyText")
+        self.ures_szoveg.setObjectName("UresAllapotSzoveg")
         # setSizePolicy: dinamikusan kitölti a rendelkezésre álló üres helyet vízszintesen és függőlegesen is, hogy a szöveg középre kerüljön
         self.ures_szoveg.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         # setAlignment: pontosan középre zárja a szöveget a dobozán belül
@@ -75,8 +73,6 @@ class FomenuNezet(QWidget):
         self.gorgetheto_terulet = QScrollArea()
         # setWidgetResizable: engedélyezi, hogy a belső tartalom dinamikusan alkalmazkodjon a külső ablak méretéhez
         self.gorgetheto_terulet.setWidgetResizable(True)
-        # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.gorgetheto_terulet.setObjectName("SubjectScrollArea")
 
         # létrehoz egy üres tárolót (widgetet), ami magát a rácsot fogja tartalmazni
         self.racs_tarolo = QWidget()
@@ -94,11 +90,9 @@ class FomenuNezet(QWidget):
 
         # QPushButton: kattintható gomb az új témakör létrehozásához
         self.uj_gomb = QPushButton("Új témakör létrehozása")
-        # setIcon: beállít egy kis képet (ikont) a gomb szövege mellé
-        self.uj_gomb.setIcon(QIcon("assets/icons/hozzadas_gomb.png"))
         self.uj_gomb.setIconSize(QSize(24, 24))
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.uj_gomb.setObjectName("ActionButton")
+        self.uj_gomb.setObjectName("HozzadasGomb")
         # clicked.connect: ha rákattintanak, lefuttatja az uj_temakor_hozzadasa metódust
         self.uj_gomb.clicked.connect(self.uj_temakor_hozzadasa)
         
@@ -108,7 +102,7 @@ class FomenuNezet(QWidget):
         # QPushButton: gomb az alkalmazásból való kilépéshez
         self.kilepes_gomb = QPushButton("Kilépés")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.kilepes_gomb.setObjectName("ActionButton2")
+        self.kilepes_gomb.setObjectName("MuveletiGomb")
         # clicked.connect: közvetlenül összeköti a gombot a teljes PyQt6 alkalmazás bezárásával
         self.kilepes_gomb.clicked.connect(QApplication.instance().quit)
         
@@ -174,7 +168,7 @@ class FomenuNezet(QWidget):
                 temakor_gomb.setMinimumSize(140, 140)
                 temakor_gomb.setMaximumSize(300, 300)
                 # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-                temakor_gomb.setObjectName("SubjectButton")
+                temakor_gomb.setObjectName("TemakorGomb")
                 # setSizePolicy: engedi, hogy a gomb rugalmasan kitöltse a rácsban lévő celláját
                 temakor_gomb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                 

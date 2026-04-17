@@ -1,7 +1,5 @@
 import random
-from PyQt6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QLabel, 
-                             QRadioButton, QButtonGroup, QCheckBox, 
-                             QLineEdit, QComboBox, QWidget)
+from PyQt6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton, QButtonGroup, QCheckBox, QLineEdit, QComboBox, QWidget)
 
 class KvizWidget(QFrame):
     def __init__(self, kerdes_adat: dict, sorszam: int) -> None:
@@ -11,7 +9,7 @@ class KvizWidget(QFrame):
         self.kerdes_id = kerdes_adat.get("id")
 
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.setObjectName("QuestionFrame")
+        self.setObjectName("KerdesKeret")
         
         # QVBoxLayout: függőlegesen egymás alá rendezi a benne elhelyezett elemeket (widgeteket)
         self.elrendezes = QVBoxLayout(self)
@@ -21,16 +19,16 @@ class KvizWidget(QFrame):
 
     def _fejlec_beallitasa(self, sorszam: int) -> None:
         # lekéri a kérdés szövegét a JSON-ből.
-        # a .get() először a "question" kulcsot keresi
-        # ha az nincs (pl. párosítós feladatnál), akkor az "instruction" kulcsot, végső esetben pedig a "Kérdés?" szöveget adja vissza
-        kerdes_szoveg = self.kerdes_adat.get("question", self.kerdes_adat.get("instruction", "Kérdés?"))
+        # a .get() először a "kerdes" kulcsot keresi
+        # ha az nincs (pl. párosítós feladatnál), akkor az "utasitas" kulcsot, végső esetben pedig a "Kérdés?" szöveget adja vissza
+        kerdes_szoveg = self.kerdes_adat.get("kerdes", self.kerdes_adat.get("utasitas", "Kérdés?"))
         
         # QLabel: megjeleníti a szöveget a felületen
         # <b> HTML tag segítségével vastagon jeleníti meg a sorszámot és a kérdést
         cimke = QLabel(f"<b>{sorszam}. {kerdes_szoveg}</b>")
 
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        cimke.setObjectName("QuestionText")
+        cimke.setObjectName("KerdesSzoveg")
         
         # setWordWrap(True): engedélyezi a szövegnek a sortörést, ha a kérdés túl hosszú lenne és nem férne ki egyetlen sorba
         cimke.setWordWrap(True)
@@ -52,27 +50,27 @@ class KvizWidget(QFrame):
         pass
 
     def _visszajelzes_stilus_beallitasa(self, widget: QWidget, statusz: str) -> None:
-        # setProperty: beállítja a felületi elem (widget) egyedi "feedback" tulajdonságát 
-        # pontosan arra az értékre, amit a 'statusz' paraméterben megkapott (pl. "correct" vagy "wrong")
+        # setProperty: beállítja a felületi elem (widget) egyedi "visszajelzes" tulajdonságát 
+        # pontosan arra az értékre, amit a 'statusz' paraméterben megkapott (pl. "helyes" vagy "hibas")
         # ez alapján fogja a QSS a megfelelő színeket (zöld vagy piros állapotot) alkalmazni
-        widget.setProperty("feedback", statusz)
+        widget.setProperty("visszajelzes", statusz)
         # unpolish: eltávolítja a widgetről a jelenleg érvényes stíluslap (QSS) beállításait
         widget.style().unpolish(widget)
         # polish: újraalkalmazza a stíluslapot
-        # beolvassa az új "feedback" értéket, és frissíti a widget megjelenését a képernyőn
+        # beolvassa az új "visszajelzes" értéket, és frissíti a widget megjelenését a képernyőn
         widget.style().polish(widget)
 
     def _magyarazat_megjelenitese(self, eredmeny_adat: dict) -> None:
         # ha a felhasználó válasza nem volt helyes (False)
         if not eredmeny_adat["helyes"]:
-            # a kiértékelőtől kapott "feedback" egy belső szótár, ami a részleteket tartalmazza
-            # ebből lekéri a magyarázatot ("explanation" kulcs), ha pedig nincs, egy üres stringet ("") ad vissza
-            magyarazat_szoveg = eredmeny_adat["feedback"].get("explanation", "")
+            # a kiértékelőtől kapott "visszajelzes" egy belső szótár, ami a részleteket tartalmazza
+            # ebből lekéri a magyarázatot ("magyarazat" kulcs), ha pedig nincs, egy üres stringet ("") ad vissza
+            magyarazat_szoveg = eredmeny_adat["visszajelzes"].get("magyarazat", "")
             # QLabel: megjeleníti a szöveget a felületen
             # a <b> HTML tag segítségével vastagon jeleníti meg a "Magyarázat:" szót
             magyarazat_cimke = QLabel(f"<b>Magyarázat:</b> {magyarazat_szoveg}")
             # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-            magyarazat_cimke.setObjectName("EmptyText2")
+            magyarazat_cimke.setObjectName("UresAllapotSzoveg")
             # setWordWrap(True): engedélyezi a szövegnek a sortörést, ha a magyarázat túl hosszú lenne és nem férne ki egyetlen sorba
             magyarazat_cimke.setWordWrap(True)
             # hozzáadja a magyarázatot tartalmazó címkét az elrendezéshez
@@ -85,7 +83,7 @@ class EgyvalaszosWidget(KvizWidget):
         self.gombok = []
         
         # végigmegy a kérdéshez tartozó lehetséges válaszlehetőségeken (opciókon) a JSON-ből
-        for opcio in self.kerdes_adat.get("options", []):
+        for opcio in self.kerdes_adat.get("opciok", []):
             # QRadioButton: létrehoz egy kiválasztható, kör alakú rádiógombot a válasz szövegével
             radio_gomb = QRadioButton(opcio)
             
@@ -103,28 +101,28 @@ class EgyvalaszosWidget(KvizWidget):
         return next((gomb.text() for gomb in self.gombok if gomb.isChecked()), None)
     
     def visszajelzes_alkalmazasa(self, eredmeny_adat: dict) -> None:
-        # kiolvassa a belső "feedback" szótárból a ténylegesen helyes választ
-        helyes_valasz = eredmeny_adat["feedback"]["correct_answer"]
+        # kiolvassa a belső "visszajelzes" szótárból a ténylegesen helyes választ
+        helyes_valasz = eredmeny_adat["visszajelzes"]["helyes_valasz"]
         self._gombok_stilusanak_beallitasa(helyes_valasz)
         self._magyarazat_megjelenitese(eredmeny_adat)
 
     def _gombok_stilusanak_beallitasa(self, helyes_valasz: str) -> None:
         # végigmegy a kérdéshez tartozó összes rádiógombon
         for gomb in self.gombok:
-            # ha a gomb felirata megegyezik a helyes válasszal, zöldre ("correct") színezi
+            # ha a gomb felirata megegyezik a helyes válasszal, zöldre ("helyes") színezi
             # (ezt akkor is zöldre színezi, ha a felhasználó nem ezt jelölte be, hogy lássa, mi lett volna a jó)
             # text(): ha megtalálta a bejelölt gombot, kiolvassa és visszaadja a rajta lévő feliratot (magát a választ)
             if gomb.text() == helyes_valasz:
-                self._visszajelzes_stilus_beallitasa(gomb, "correct")
+                self._visszajelzes_stilus_beallitasa(gomb, "helyes")
             elif gomb.isChecked():
-                self._visszajelzes_stilus_beallitasa(gomb, "wrong")
+                self._visszajelzes_stilus_beallitasa(gomb, "hibas")
 
 class TobbvalaszosWidget(KvizWidget):
     def _felulet_beallitasa(self) -> None:
         self.dobozok = []
         
         # végigmegy a kérdéshez tartozó lehetséges opciókon (válaszokon) a JSON-ből
-        for opcio in self.kerdes_adat.get("options", []):
+        for opcio in self.kerdes_adat.get("opciok", []):
             # QCheckBox: olyan jelölőnégyzetet hoz létre, amiből a felhasználó többet is kiválaszthat egyszerre
             jelolo_negyzet = QCheckBox(opcio)
             # hozzáadja az aktuális jelölőnégyzetet a függőleges elrendezéshez
@@ -138,9 +136,9 @@ class TobbvalaszosWidget(KvizWidget):
         return [doboz.text() for doboz in self.dobozok if doboz.isChecked()]
 
     def visszajelzes_alkalmazasa(self, eredmeny_adat: dict) -> None:
-        # kiolvassa a belső "feedback" szótárból a helyes válaszok listáját
+        # kiolvassa a belső "visszajelzes" szótárból a helyes válaszok listáját
         # (mivel több jó válasz is lehet, ez egy lista kulcsszavakkal/mondatokkal)
-        helyes_valaszok = eredmeny_adat["feedback"]["correct_answers"]
+        helyes_valaszok = eredmeny_adat["visszajelzes"]["helyes_valaszok"]
         self._jelolonegyzetek_stilusanak_beallitasa(helyes_valaszok)
         self._magyarazat_megjelenitese(eredmeny_adat)
 
@@ -149,18 +147,18 @@ class TobbvalaszosWidget(KvizWidget):
         for doboz in self.dobozok:
             # megnézi, hogy az adott jelölőnégyzet szövege szerepel-e a helyes válaszok listájában
             if doboz.text() in helyes_valaszok:
-                # ha igen, zöldre ("correct") színezi
-                self._visszajelzes_stilus_beallitasa(doboz, "correct")
-            # ha a doboz nincs a helyesek között, de a felhasználó bepipálta, pirosra ("wrong") színezi
+                # ha igen, zöldre ("helyes") színezi
+                self._visszajelzes_stilus_beallitasa(doboz, "helyes")
+            # ha a doboz nincs a helyesek között, de a felhasználó bepipálta, pirosra ("hibas") színezi
             elif doboz.isChecked():
-                self._visszajelzes_stilus_beallitasa(doboz, "wrong")
+                self._visszajelzes_stilus_beallitasa(doboz, "hibas")
 
 class RovidValaszWidget(KvizWidget):
     def _felulet_beallitasa(self) -> None:
         # QLineEdit: egyetlen soros szövegbeviteli mezőt hoz létre a rövid válasznak
         self.beviteli_mezo = QLineEdit()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.beviteli_mezo.setObjectName("ShortAnswerInput")
+        self.beviteli_mezo.setObjectName("RovidValaszMezo")
         # setPlaceholderText: halvány szürke szöveg, ami eltűnik, amint a felhasználó gépelni kezd
         self.beviteli_mezo.setPlaceholderText("Írd ide a választ...")
         # hozzáadja a beviteli mezőt a függőleges elrendezéshez
@@ -176,19 +174,19 @@ class RovidValaszWidget(KvizWidget):
         
     def _beviteli_mezo_frissitese(self, eredmeny_adat: dict) -> None:
         if eredmeny_adat["helyes"]:
-            self._visszajelzes_stilus_beallitasa(self.beviteli_mezo, "correct")
+            self._visszajelzes_stilus_beallitasa(self.beviteli_mezo, "helyes")
         else:
-            self._visszajelzes_stilus_beallitasa(self.beviteli_mezo, "wrong")
+            self._visszajelzes_stilus_beallitasa(self.beviteli_mezo, "hibas")
             # .join() egy vesszővel elválasztott szöveggé fűzi össze a listát
-            # eredmeny_adat szótárból kiveszi a "feedback" kulcshoz tartozó értéket (ami szintén egy szótár)
-            # majd ebből kiveszi az "accepted_keywords" kulcshoz tartozó értéket, de ha az nem létezik, akkor egy üres listát ([]) ad vissza
-            kulcsszavak = ", ".join(eredmeny_adat["feedback"].get("accepted_keywords", []))
+            # eredmeny_adat szótárból kiveszi a "visszajelzes" kulcshoz tartozó értéket (ami szintén egy szótár)
+            # majd ebből kiveszi az "elfogadott_kulcsszavak" kulcshoz tartozó értéket, de ha az nem létezik, akkor egy üres listát ([]) ad vissza
+            kulcsszavak = ", ".join(eredmeny_adat["visszajelzes"].get("elfogadott_kulcsszavak", []))
             self.beviteli_mezo.setText(self.beviteli_mezo.text() + f" (Helyes: {kulcsszavak})")
 
 class ParositosWidget(KvizWidget):
     def _felulet_beallitasa(self) -> None:
-        # lekéri a JSON-ből a "pairs" (párok) szótárat, ha nincs, üres szótárat ad vissza
-        parok = self.kerdes_adat.get("pairs", {})
+        # lekéri a JSON-ből a "parok" (párok) szótárat, ha nincs, üres szótárat ad vissza
+        parok = self.kerdes_adat.get("parok", {})
         # a szótár kulcsai alkotják a bal oldalt (pl. fogalmak), ezek fix sorrendben maradnak
         bal_oldal = list(parok.keys())
         # a szótár értékei alkotják a jobb oldalt (pl. definíciók), ezek kerülnek a legördülő menübe
@@ -208,7 +206,7 @@ class ParositosWidget(KvizWidget):
             # QComboBox: legördülő menüt hoz létre a jobb oldali (kevert) válaszlehetőségeknek
             legordulo_menu = QComboBox()
             # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-            legordulo_menu.setObjectName("MatchingCombo")
+            legordulo_menu.setObjectName("ParositoValaszto")
             # addItem: betesz egy alapértelmezett szöveget a menü legtetejére
             legordulo_menu.addItem("--- Válassz párt ---")
             # addItems: hozzáadja a teljes összekevert válaszlistát a menühöz
@@ -227,8 +225,8 @@ class ParositosWidget(KvizWidget):
         return {sor["bal_szoveg"]: sor["legordulo_menu"].currentText() for sor in self.sorok}
 
     def visszajelzes_alkalmazasa(self, eredmeny_adat: dict) -> None:
-        # kiolvassa a belső "feedback" szótárból az eredeti, helyes párosításokat
-        eredeti_parok = eredmeny_adat["feedback"]["pairs"]
+        # kiolvassa a belső "visszajelzes" szótárból az eredeti, helyes párosításokat
+        eredeti_parok = eredmeny_adat["visszajelzes"]["parok"]
         # meghívja az alatta lévő segédmetódust, ami zöldre vagy pirosra színezi a menüket az eredmény alapján
         self._legordulo_menuk_frissitese(eredeti_parok)
         # meghívja az ősosztályból örökölt metódust, ami kiírja a magyarázatot a felületre, ha hibás volt a válasz
@@ -245,11 +243,11 @@ class ParositosWidget(KvizWidget):
             # ellenőrzi, hogy a felhasználó által kiválasztott szöveg megegyezik-e a helyessel
             # a .currentText() visszaadja azt, amit a felhasználó kiválasztott
             if legordulo_menu.currentText() == helyes_par:
-                # ha igen, zöldre ("correct") színezi a menüt az ősosztály metódusával
-                self._visszajelzes_stilus_beallitasa(legordulo_menu, "correct")
+                # ha igen, zöldre ("helyes") színezi a menüt az ősosztály metódusával
+                self._visszajelzes_stilus_beallitasa(legordulo_menu, "helyes")
             else:
-                # ha nem, pirosra ("wrong") színezi a menüt
-                self._visszajelzes_stilus_beallitasa(legordulo_menu, "wrong")
+                # ha nem, pirosra ("hibas") színezi a menüt
+                self._visszajelzes_stilus_beallitasa(legordulo_menu, "hibas")
                 # ha a felhasználó választott valamit (tehát nem az alapértelmezett "--- Válassz párt ---" maradt bent),
                 # akkor a kiválasztott elem szövegét átírja úgy, hogy mutassa a helyes választ is
                 # a .currentText() visszaadja azt, amit a felhasználó kiválasztott
@@ -259,7 +257,7 @@ class ParositosWidget(KvizWidget):
 class SorbarendezosWidget(KvizWidget):
     def _felulet_beallitasa(self) -> None:
         # lekéri a JSON-ből a helyes sorrendet tartalmazó listát, ha nincs, egy üres listát ad vissza
-        helyes_sorrend = self.kerdes_adat.get("ordered_items", [])
+        helyes_sorrend = self.kerdes_adat.get("sorbarendezett_elemek", [])
         # a .copy() másolatot készít a listáról, hogy az összekeverés során az eredeti (helyes) sorrend ne vesszen el
         kevert_sorrend = helyes_sorrend.copy()
         # a random.shuffle() összekeveri a másolt lista elemeit
@@ -279,7 +277,7 @@ class SorbarendezosWidget(KvizWidget):
             # QComboBox: legördülő menüt hoz létre az összekevert válaszlehetőségeknek
             legordulo_menu = QComboBox()
             # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-            legordulo_menu.setObjectName("OrderingCombo")
+            legordulo_menu.setObjectName("SorrendezoValaszto")
             # addItem: betesz egy alapértelmezett szöveget a menü legtetejére
             legordulo_menu.addItem("--- Melyik jön ide? ---")
             # addItems: hozzáadja a teljes összekevert válaszlistát a menühöz
@@ -300,8 +298,8 @@ class SorbarendezosWidget(KvizWidget):
         return [legordulo_menu.currentText() for legordulo_menu in self.menuk]
 
     def visszajelzes_alkalmazasa(self, eredmeny_adat: dict) -> None:
-        # kiolvassa a belső "feedback" szótárból az eredeti, helyes sorrendet tartalmazó listát
-        eredeti_sorrend = eredmeny_adat["feedback"]["ordered_items"]
+        # kiolvassa a belső "visszajelzes" szótárból az eredeti, helyes sorrendet tartalmazó listát
+        eredeti_sorrend = eredmeny_adat["visszajelzes"]["sorbarendezett_elemek"]
         self._legordulo_menuk_frissitese(eredeti_sorrend)
         self._magyarazat_megjelenitese(eredmeny_adat)
         
@@ -314,11 +312,11 @@ class SorbarendezosWidget(KvizWidget):
             # ellenőrzi, hogy a felhasználó által kiválasztott szöveg megegyezik-e a helyessel
             # a .currentText() visszaadja azt, amit a felhasználó kiválasztott
             if legordulo_menu.currentText() == helyes_elem:
-                # ha igen, zöldre ("correct") színezi a menüt az ősosztály metódusával
-                self._visszajelzes_stilus_beallitasa(legordulo_menu, "correct")
+                # ha igen, zöldre ("helyes") színezi a menüt az ősosztály metódusával
+                self._visszajelzes_stilus_beallitasa(legordulo_menu, "helyes")
             else:
-                # ha nem, pirosra ("wrong") színezi a menüt
-                self._visszajelzes_stilus_beallitasa(legordulo_menu, "wrong")
+                # ha nem, pirosra ("hibas") színezi a menüt
+                self._visszajelzes_stilus_beallitasa(legordulo_menu, "hibas")
                 # ha a felhasználó választott valamit (tehát nem az alapértelmezett "--- Melyik jön ide? ---" maradt bent),
                 # akkor a kiválasztott elem szövegét átírja úgy, hogy mutassa a helyes választ is
                 if legordulo_menu.currentText() != "--- Melyik jön ide? ---":
@@ -326,9 +324,9 @@ class SorbarendezosWidget(KvizWidget):
 
 # szótár, ami összeköti a JSON-ben kapott angol kérdéstípusokat a megfelelő widget (felületi elem) osztályokkal
 WIDGET_REGISZTER = {
-    "single_choice": EgyvalaszosWidget,
-    "multiple_choice": TobbvalaszosWidget,
-    "short_answer": RovidValaszWidget,
-    "matching": ParositosWidget,
-    "ordering": SorbarendezosWidget
+    "egyvalaszos": EgyvalaszosWidget,
+    "tobbvalaszos": TobbvalaszosWidget,
+    "rovid_valasz": RovidValaszWidget,
+    "parositos": ParositosWidget,
+    "sorbarendezos": SorbarendezosWidget
 }

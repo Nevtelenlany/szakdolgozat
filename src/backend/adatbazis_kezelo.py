@@ -8,7 +8,7 @@ def _kollekcio_lekerese(adatbazis_utvonal: str):
     # anonymized_telemetry=False kikapcsolja a névtelen adatgyűjtést (nem küld adatokat a készítőknek)
     kliens = chromadb.PersistentClient(path=adatbazis_utvonal, settings=Settings(anonymized_telemetry=False))
     
-    # lekéri a 'my-collection' nevű táblát, vagy automatikusan létrehozza, ha még nem létezik
+    # lekéri a 'my-collection' nevű kollekciót, vagy automatikusan létrehozza, ha még nem létezik
     return kliens.get_or_create_collection(name="my-collection")
 
 def hatter_mentes(adatbazis_utvonal: str, darab_azonositok: list[str], vektorok: list[list[float]], darabok: list[str], metaadatok: list[dict]) -> None:

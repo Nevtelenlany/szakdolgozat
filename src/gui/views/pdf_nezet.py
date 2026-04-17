@@ -1,6 +1,4 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, 
-                             QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView, 
-                             QAbstractItemView, QMessageBox)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QMessageBox)
 from PyQt6.QtCore import Qt
 from functools import partial
 
@@ -38,7 +36,7 @@ class PdfNezet(QWidget):
         # QLabel: megjeleníti ezt a figyelmeztető szöveget, ha még nincs PDF feltöltve
         self.ures_szoveg = QLabel("Hmm, még nincs PDF feltöltve. Esetleg tölts fel egyet!")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.ures_szoveg.setObjectName("EmptyText2")
+        self.ures_szoveg.setObjectName("UresAllapotSzoveg")
         
         # setSizePolicy: beállítja, hogyan reagáljon az elem az ablak átméretezésére
         # a QSizePolicy.Policy.Expanding paraméterekkel dinamikusan kitölti a rendelkezésre álló üres helyet vízszintesen és függőlegesen is
@@ -101,7 +99,7 @@ class PdfNezet(QWidget):
         self.hozzadas_gomb = QPushButton("Új PDF hozzáadása")
         self.hozzadas_gomb.setToolTip("Új tananyag feltöltése és feldolgozása a tudásbázisba (ez a fájlmérettől függően eltarthat egy ideig).")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.hozzadas_gomb.setObjectName("ActionButton")
+        self.hozzadas_gomb.setObjectName("HozzadasGomb")
         # clicked.connect: ha rákattintanak a gombra, lefuttatja a PDF hozzáadását végző metódust
         self.hozzadas_gomb.clicked.connect(self._pdf_hozzadasa)
         

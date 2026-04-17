@@ -1,8 +1,5 @@
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QPushButton, QLineEdit, QScrollArea, QSizePolicy
-)
-from PyQt6.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QScrollArea, QSizePolicy)
+from PyQt6.QtCore import Qt, QTimer
 
 from backend.temakor_kezelo import TemakorKezelo
 from gui.views.hatterszal import ChatbotHatterszal
@@ -42,7 +39,7 @@ class ChatbotNezet(QWidget):
         # létrehoz egy üres widgetet, ezen fognak egymás alá kerülni a szövegbuborékok
         self.uzenetek_widget = QWidget()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.uzenetek_widget.setObjectName("MessagesWidget")
+        self.uzenetek_widget.setObjectName("UzenetekWidget")
         # QVBoxLayout: létrehoz egy függőleges elrendezést az üzenetek tárolójának
         self.uzenetek_elrendezes = QVBoxLayout(self.uzenetek_widget)
         # setAlignment: az üzeneteket fentről lefelé rendezi, az ablak tetejéhez igazítva
@@ -64,7 +61,7 @@ class ChatbotNezet(QWidget):
         # QLineEdit: létrehoz egy egysoros szövegbeviteli mezőt
         self.uzenet_beviteli_mezo = QLineEdit()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.uzenet_beviteli_mezo.setObjectName("MessageInput")
+        self.uzenet_beviteli_mezo.setObjectName("UzenetBeviteliMezo")
         # setPlaceholderText: halványszürke szöveget jelenít meg, ami eltűnik, amint a felhasználó gépelni kezd
         self.uzenet_beviteli_mezo.setPlaceholderText("Írd ide a kérdésed...")
         # karakterlimit beállítása
@@ -75,7 +72,7 @@ class ChatbotNezet(QWidget):
         # QPushButton: létrehoz egy kattintható gombot a küldéshez
         self.kuldes_gomb = QPushButton("Küldés")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.kuldes_gomb.setObjectName("SendButton")
+        self.kuldes_gomb.setObjectName("KuldesGomb")
         # clicked.connect: összeköti a gombkattintást a self.uzenet_kuldese metódussal
         self.kuldes_gomb.clicked.connect(self.uzenet_kuldese)
 
@@ -124,7 +121,7 @@ class ChatbotNezet(QWidget):
         # létrehoz egy ideiglenes címkét, ami jelzi a felhasználónak, hogy a bot dolgozik a háttérben
         self.gondolkodik_szoveg = QLabel("A Gemini keresi a választ a PDF-ben...")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.gondolkodik_szoveg.setObjectName("ThinkingLabel")
+        self.gondolkodik_szoveg.setObjectName("GondolkodikSzoveg")
         # beteszi az ideiglenes üzenetet az üzenetek függőleges elrendezésébe
         self.uzenetek_elrendezes.addWidget(self.gondolkodik_szoveg)
         
@@ -204,7 +201,7 @@ class ChatbotNezet(QWidget):
         szoveg_doboz.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         
         # setObjectName: stíluslap (QSS) hivatkozás beállítása (más háttere/színe lesz a felhasználó és a bot buborékjának)
-        szoveg_doboz.setObjectName("UserBubble" if felhasznalo_e else "BotBubble")
+        szoveg_doboz.setObjectName("FelhasznaloBuborek" if felhasznalo_e else "BotBuborek")
         
         # a felhasználó üzenete picit keskenyebb lehet (a képernyő 75%-a), a boté szélesebb (90%)
         szorzo = 0.75 if felhasznalo_e else 0.90

@@ -1,10 +1,8 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, 
-                             QSlider, QScrollArea, QSpinBox, QSizePolicy)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QSlider, QScrollArea, QSpinBox, QSizePolicy)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QStringListModel
-import json
+
 from pathlib import Path
 
-from backend.kviz_generator import KvizGenerator
 from backend.kviz_kiertekelo import KvizKiertekelo, KvizFajlKezelo
 from gui.views.kviz_widget import WIDGET_REGISZTER
 from gui.views.hatterszal import KvizHatterszal
@@ -41,7 +39,7 @@ class KvizGeneratorNezet(QWidget):
         
         self.hiba_cimke = QLabel("Nincs PDF feltöltve. Tölts fel egyet, mielőtt kvízt kérnél!")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        self.hiba_cimke.setObjectName("EmptyText2")
+        self.hiba_cimke.setObjectName("UresAllapotSzoveg")
         # setAlignment: beállítja a szöveg igazítását, a Qt.AlignmentFlag.AlignCenter pedig pontosan középre zárja a számot a dobozon belül
         self.hiba_cimke.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -66,12 +64,12 @@ class KvizGeneratorNezet(QWidget):
         pdf_sor = QHBoxLayout()
         pdf_cimke = QLabel("Válaszd ki a tananyagot (PDF):")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        pdf_cimke.setObjectName("EmptyText2")
+        pdf_cimke.setObjectName("UresAllapotSzoveg")
 
         # QComboBox: legördülő menüt hoz létre
         self.pdf_valaszto = QComboBox()
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        self.pdf_valaszto.setObjectName("PdfSelector")
+        self.pdf_valaszto.setObjectName("PdfValaszto")
         
         # QStringListModel: ez a modell tárolja a legördülő menü választható szöveges elemeit
         self.pdf_modell = QStringListModel()
@@ -94,13 +92,13 @@ class KvizGeneratorNezet(QWidget):
         csuszka_sor = QHBoxLayout()
         csuszka_cimke = QLabel("Kérdések maximális száma:")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        csuszka_cimke.setObjectName("EmptyText2")
+        csuszka_cimke.setObjectName("UresAllapotSzoveg")
         
         # QSlider: létrehoz egy csúszkát, a Qt.Orientation.Horizontal paraméter megadja, hogy az vízszintes tájolású legyen
         self.csuszka = QSlider(Qt.Orientation.Horizontal)
         self.csuszka.setToolTip("Állítsd be a kérdések maximális számát. A tényleges kérdésszám a tananyag hosszától is függhet.")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        self.csuszka.setObjectName("QuizSlider")
+        self.csuszka.setObjectName("KvizCsuszka")
         self.csuszka.setRange(1, 50) # beállítja a minimum és maximum értéket
         self.csuszka.setValue(10) # beállítja az alapértelmezett kezdőértéket
         # setTickPosition: megjeleníti a beosztásokat a vízszintes csúszka sávja alatt
@@ -110,7 +108,7 @@ class KvizGeneratorNezet(QWidget):
         # QSpinBox: egy számbeviteli mező (amiben alapesetben nyíilal is lehet állítani az értéket)
         self.csuszka_ertek_cimke = QSpinBox()
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        self.csuszka_ertek_cimke.setObjectName("SliderValueBadge")
+        self.csuszka_ertek_cimke.setObjectName("CsuszkaErtekJelzo")
         self.csuszka_ertek_cimke.setRange(1, 50) # beállítja a minimum és maximum értéket
         self.csuszka_ertek_cimke.setValue(10) # beállítja az alapértelmezett kezdőértéket
         # setAlignment: beállítja a szöveg igazítását, a Qt.AlignmentFlag.AlignCenter pedig pontosan középre zárja a számot a dobozon belül
@@ -143,7 +141,7 @@ class KvizGeneratorNezet(QWidget):
         # generáló gomb létrehozása
         self.generalas_gomb = QPushButton("Kvíz generálása")
         # setObjectName: ez alapján tud hivatkozni rá a stíluslapokban (qss)
-        self.generalas_gomb.setObjectName("GenerateButton")
+        self.generalas_gomb.setObjectName("GeneralasGomb")
         # clicked.connect: ha rákattintanak a gombra, le futatja a self.kviz_inditasa metódust
         self.generalas_gomb.clicked.connect(self.kviz_inditasa)
         # hozzáadja a gombot a függőleges elrendezéshez
@@ -155,7 +153,7 @@ class KvizGeneratorNezet(QWidget):
     def _kviz_terulet_beallitasa(self) -> None:
         self.info_cimke = QLabel()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.info_cimke.setObjectName("InfoLabel")
+        self.info_cimke.setObjectName("InfoCimke")
         # setAlignment: beállítja a szöveg igazítását, a Qt.AlignmentFlag.AlignCenter pedig pontosan középre zárja a szöveget a címkén belül
         self.info_cimke.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -167,7 +165,7 @@ class KvizGeneratorNezet(QWidget):
         # QScrollArea: figyeli a benne lévő tartalmat, és csak akkor jeleníti meg az oldalán a gördítősávot, ha a kérdések már nem férnek ki a képernyőre
         self.gorgetheto_terulet = QScrollArea()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.gorgetheto_terulet.setObjectName("QuizScrollArea")
+        self.gorgetheto_terulet.setObjectName("KvizGorgoTerulet")
         # setWidgetResizable: engedélyezi, hogy a bekerülő tartalom (a kérdések widgetjei) dinamikusan alkalmazkodjanak a külső ablak méretéhez
         self.gorgetheto_terulet.setWidgetResizable(True)
         
@@ -181,7 +179,7 @@ class KvizGeneratorNezet(QWidget):
         self.kiertekel_gomb = QPushButton("Kvíz beküldése és értékelése")
         self.kiertekel_gomb.setToolTip("A válaszok értékelése, pontszámítás és a magyarázatok megjelenítése.")
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        self.kiertekel_gomb.setObjectName("GenerateButton")
+        self.kiertekel_gomb.setObjectName("GeneralasGomb")
         # clicked.connect: ha rákattintanak a gombra, lefuttatja a self.kviz_kiertekelese metódust
         self.kiertekel_gomb.clicked.connect(self.kviz_kiertekelese)
         
@@ -248,13 +246,13 @@ class KvizGeneratorNezet(QWidget):
         # setText: beállítja a címkén megjelenő szöveget, tájékoztatva a felhasználót a háttérben zajló elemzésről
         self.info_cimke.setText(f"A(z) {kivalasztott_pdf} elemzése folyamatban... Ez eltarthat egy darabig.")
         
-        # setProperty: beállítja a címke egyedi "feedback" (visszajelzés) tulajdonságát a QSS-ben
+        # setProperty: beállítja a címke egyedi "visszajelzes" tulajdonságát a QSS-ben
         # üres string "" megadása törli a korábbi hiba- vagy sikerállapotot
-        self.info_cimke.setProperty("feedback", "")
+        self.info_cimke.setProperty("visszajelzes", "")
         # unpolish: eltávolítja a widgetről a jelenleg érvényes stíluslap (QSS) beállításait
         self.info_cimke.style().unpolish(self.info_cimke)
         # polish: újraalkalmazza a stíluslapot
-        # beolvassa az új "feedback" értéket, és frissíti a színeket a képernyőn
+        # beolvassa az új "visszajelzes" értéket, és frissíti a színeket a képernyőn
         self.info_cimke.style().polish(self.info_cimke)
         self.info_cimke.show()
         
@@ -277,13 +275,13 @@ class KvizGeneratorNezet(QWidget):
         # setText: beállítja a címkén megjelenő szöveget, tájékoztatva a felhasználót a hibáról
         self.info_cimke.setText(f"Hiba történt a generálás során:\n{hiba_uzenet}")
         
-        # setProperty: beállítja a címke egyedi "feedback" (visszajelzés) tulajdonságát a QSS-ben
+        # setProperty: beállítja a címke egyedi "visszajelzes" tulajdonságát a QSS-ben
         # üres string "" megadása törli a korábbi hiba- vagy sikerállapotot
-        self.info_cimke.setProperty("feedback", "")
+        self.info_cimke.setProperty("visszajelzes", "")
         # unpolish: eltávolítja a widgetről a jelenleg érvényes stíluslap (QSS) beállításait
         self.info_cimke.style().unpolish(self.info_cimke)
         # polish: újraalkalmazza a stíluslapot
-        # beolvassa az új "feedback" értéket, és frissíti a színeket a képernyőn
+        # beolvassa az új "visszajelzes" értéket, és frissíti a színeket a képernyőn
         self.info_cimke.style().polish(self.info_cimke)
         
         self.ures_ter.show()
@@ -313,7 +311,7 @@ class KvizGeneratorNezet(QWidget):
         # létrehoz egy üres widgetet, ami az összes kérdést magába foglalja majd
         uj_tartalom_widget = QWidget()
         # setObjectName: ez alapján lehet hivatkozni rá a stíluslapokban (QSS)
-        uj_tartalom_widget.setObjectName("QuizContentWidget")
+        uj_tartalom_widget.setObjectName("KvizTartalomWidget")
         
         # QVBoxLayout: függőlegesen egymás alá rendezi a benne elhelyezett elemeket (widgeteket) és hozzárendeli az uj_tartalom_widgethez
         uj_tartalom_elrendezes = QVBoxLayout(uj_tartalom_widget)
@@ -323,7 +321,7 @@ class KvizGeneratorNezet(QWidget):
         # enumerate: egyszerre adja vissza a sorszámot (kerdes_szamlalo) és az aktuális elemet (kerdes_adat)
         # start=1: a sorszámozás 1-től induljon, ne 0-tól
         for kerdes_szamlalo, kerdes_adat in enumerate(kviz_lista, start=1):
-            tipus = kerdes_adat.get("type")
+            tipus = kerdes_adat.get("tipus")
             kerdes_id = kerdes_adat.get("id", kerdes_szamlalo)
 
             # := (walrus operátor) értékadás és vizsgálat egyben

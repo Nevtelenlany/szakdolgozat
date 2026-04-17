@@ -1,397 +1,400 @@
-/*címsor*/
-QLabel#MainTitle {
-    font-size: 24px; 
-    font-weight: bold; 
-    margin-bottom: 20px;
-    color: #49668C;
+/* Főmenü */
+
+QLabel#FoCimsor {
+    font-size: 24px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+    margin-bottom: 20px; /* külső margó a szöveg alatt */
+    color: #49668C; /* betűszín */
 }
 
-/*még nincs témakör szövege*/
-QLabel#EmptyText, QLabel#EmptyText2 {
-    font-size: 16px;
-    font-style: italic;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    color: #666666;
-    qproperty-alignment: AlignCenter;
+QLabel#UresAllapotSzoveg {
+    font-size: 16px; /* beállítja a betűméretet */
+    font-style: italic; /* dőlt betűstílus */
+    padding-top: 10px; /* belső margó a szöveg felett */
+    padding-bottom: 10px; /* belső margó a szöveg alatt */
+    color: #666666; /* betűszín */
+    qproperty-alignment: AlignCenter; /* középre igazítás */
 }
 
-/*temakor hozza adas*/
-QPushButton#ActionButton {
-    background-color: transparent;
-    font-size: 16px;
-    font-weight: bold;
-    color: #7092BE;
-    border: none;
-    outline: none;
-    qproperty-iconSize: 24px 24px;
-    qproperty-icon: url(assets/icons/hozzadas_gomb.png);
+QPushButton#MuveletiGomb {
+    background-color: transparent; /* átlátszó hátteret állít be */
+    font-size: 16px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+    color: #7092BE; /* betűszín */
+    border: none; /* eltávolítja a gomb alapértelmezett keretét */
 }
 
-/*kilepes*/
-QPushButton#ActionButton2 {
-    background-color: transparent;
-    font-size: 16px;
-    font-weight: bold;
-    color: #7092BE;
-    border: none;
-    outline: none;
+QPushButton#HozzadasGomb {
+    background-color: transparent; /* átlátszó hátteret állít be */
+    font-size: 16px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+    color: #7092BE; /* betűszín */
+    border: none; /* eltávolítja a gomb alapértelmezett keretét */
+    qproperty-icon: url(assets/icons/hozzadas_gomb.png); /* ikon betöltése */
+    qproperty-iconSize: 24px 24px; /* ikon mérete */
 }
 
-/* Hover effekt */
-QPushButton#ActionButton:hover, QPushButton#ActionButton2:hover {
-    color: #0078D7;
+/* a kurzor a gombon van */
+QPushButton#MuveletiGomb:hover, QPushButton#HozzadasGomb:hover {
+    color: #0078D7; /* betűszín */
 }
 
-/* Kattintás effekt*/
-QPushButton#ActionButton:pressed, QPushButton#ActionButton2:pressed {
-    color: #005a9e; 
+/* gomb nyomva tartása */
+QPushButton#MuveletiGomb:pressed, QPushButton#HozzadasGomb:pressed {
+    color: #005a9e; /* betűszín */
 }
 
-/*temakorok gombja*/
-QPushButton#SubjectButton {
-    background-color: #ffffff;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px; 
-    font-size: 18px;
-    font-weight: bold;
-    color: #49668C;
+QPushButton#TemakorGomb {
+    background-color: #ffffff; /* hátteret állít be */
+    border: 2px solid #e0e0e0; /* keretet állít be a gombnak */
+    border-radius: 10px; /* lekerekíti a gomb sarkait */
+    font-size: 18px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+    color: #49668C; /* betűszín */
 }
 
-QPushButton#SubjectButton:hover {
-    border: 2px solid #0078D7;
-    background-color: #f0f8ff; 
+/* a kurzor a gombon van */
+QPushButton#TemakorGomb:hover {
+    border: 2px solid #0078D7; /* keretet állít be a gombnak */
+    background-color: #f0f8ff; /* hátteret állít be */
 }
 
-QPushButton#SubjectButton:checked {
-    background-color: #d0e8ff;
-    border: 2px solid #005a9e;
-}
-
-/*görgő*/
+/* görgethető terület */
 QScrollArea {
-    border: none;
+    border: none; /* eltávolítja az alapértelmezett keretet */
 }
 
-QWidget#LeftMenuWidget {
-    background-color: #9fb1c9; 
-    border-right: 1px solid #e4e4e4; 
+/* Temakor nezet */ 
+
+QPushButton#MenuGomb {
+    background-color: transparent; /* átlátszó hátteret állít be */
+    font-size: 20px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+    color: #ffffff; /* betűszín */
+    text-align: left; /* balra igazítja a gomb szövegét */
+    padding: 15px 10px 15px 20px; /* belső margó beállítása: 15px fent, 10px jobb oldalon, 15px lent és 20px bal oldalon */
+    border: none; /* eltávolítja a gomb alapértelmezett keretét */
 }
 
-QPushButton#MenuButton {
-    background-color: transparent;
-    font-size: 20px; 
-    font-weight: bold;
-    color: #ffffff; 
-    text-align: left;
-    padding: 15px 10px 15px 20px;
-    border: none; 
+/* a kurzor a gombon van */
+QPushButton#MenuGomb:hover {
+    color: #49668C; /* betűszín */
 }
 
-QPushButton#MenuButton:hover {
-    color: #49668C; 
+QWidget#BalOldaliMenuPanel {
+    background-color: #9fb1c9; /* hátteret állít be */
+    border-right: 1px solid #e4e4e4; /* 1 pixel vastag, folytonos, halványszürke választóvonalat húz a jobb szélre */
 }
 
-/* Táblázat alapstílusa*/
+/* PDF nézet */ 
+
+/* táblázat alapstílusa */
 QTableWidget, QTableView {
-    background-color: transparent; 
-    color: white;
-    border: none;
-    qproperty-alternatingRowColors: true; 
+    background-color: transparent; /* átlátszó hátteret állít be */
+    color: white; /* betűszín */
+    border: none; /* eltávolítja az alapértelmezett keretet */
+    qproperty-alternatingRowColors: true; /* engedélyezi a váltakozó sorszíneket */
 
-    font-weight: bold; 
-    font-size: 16px;
-    font-style: italic;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    font-weight: bold; /* félkövér betűstílus */
+    font-size: 16px; /* beállítja a betűméretet */
+    font-style: italic; /* dőlt betűstílus */
+    padding-top: 10px; /* belső margó a szöveg felett */
+    padding-bottom: 10px; /* belső margó a szöveg alatt */
 }
 
-/* Táblázat fejléce */
+/* táblázat fejléce */
 QHeaderView::section {
-    background-color: transparent;
-    color: #49668C; 
-    border: none;
-    border-bottom: 2px solid #555555;
-    font-weight: bold;
-    padding-left: 5px; 
+    background-color: transparent; /* átlátszó hátteret állít be */
+    color: #49668C; /* betűszín */
+    border: none; /* eltávolítja az alapértelmezett keretet */
+    border-bottom: 2px solid #555555; /* alsó sötétszürke elválasztó vonal */
+    font-weight: bold; /* félkövér betűstílus */
+    padding-left: 5px; /* bal oldali belső margó */
 }
 
-/* Táblázat cellái*/
+/* táblázat alapméretezett cellái*/
 QTableWidget::item, QTableView::item {
-    background-color: #7092BE; 
-    border: none;
-    padding-left: 5px; 
+    background-color: #7092BE; /* hátteret állít be */
+    border: none; /* eltávolítja az alapértelmezett keretet */
+    padding-left: 5px; /* bal oldali belső margó */
 }
 
-/* Táblázat cellái*/
+/* táblázat változó cellái*/
 QTableWidget::item:alternate, QTableView::item:alternate {
-    background-color: #9fb1c9; 
+    background-color: #9fb1c9; /* hátteret állít be */
 }
 
+/* táblázatba lévő widgetek (törlés gomb) */
 QTableWidget QWidget {
-    background-color: transparent;
-    color: #e0e0e0; 
+    background-color: transparent; /* átlátszó hátteret állít be */
+    color: #e0e0e0; /* betűszín */
 }
 
-QTableView QWidget {
-    background-color: transparent;
-    color: #e0e0e0; 
+/* Chatbot */ 
+
+QWidget#UzenetekWidget {
+    background-color: #f5f5f5; /* hátteret állít be */
 }
 
-/*cahtbot*/
-
-QWidget#MessagesWidget {
-    background-color: #f5f5f5;
+QLineEdit#UzenetBeviteliMezo {
+    padding: 10px; /* belső margó: 10 pixel távolságot hagy a keret és a begépelt szöveg között */
+    border-radius: 15px; /* lekerekíti a szövegdoboz sarkait */
+    border: 1px solid #ccc; /* 1 pixel vastag, folytonos, világosszürke keretet ad neki */
+    font-size: 14px; /* beállítja a betűméretet */
 }
 
-/* Üzenet beviteli mező */
-QLineEdit#MessageInput {
-    padding: 10px; 
-    border-radius: 15px; 
-    border: 1px solid #ccc;
-    font-size: 14px;
+QPushButton#KuldesGomb {
+    padding: 10px 20px; /* belső margó: 10 pixel alul/felül, 20 pixel oldalt */
+    background-color: #7092BE; /* hátteret állít be */
+    color: white; /* betűszín */
+    border-radius: 15px; /* lekerekíti a gomb sarkait */
+    font-weight: bold; /* félkövér betűstílus */
+    font-size: 14px; /* beállítja a betűméretet */
 }
 
-/* Küldés gomb */
-QPushButton#SendButton {
-    padding: 10px 20px; 
-    background-color: #7092BE; 
-    color: white; 
-    border-radius: 15px; 
-    font-weight: bold;
-    font-size: 14px;
+/* küldés gomb amikor le van tiltva */
+QPushButton#KuldesGomb:disabled {
+    background-color: #a0c4e8; /* hátteret állít be */
+    color: #f0f0f0; /* betűszín */
 }
 
-QPushButton#SendButton:disabled {
-    background-color: #a0c4e8;
-    color: #f0f0f0;
+QLabel#GondolkodikSzoveg{
+    color: gray; /* betűszín */
+    font-style: italic; /* dőlt betűstílus */
+    font-size: 14px; /* beállítja a betűméretet */
 }
 
-/* "Gondolkodik..." szöveg */
-QLabel#ThinkingLabel {
-    color: gray; 
-    font-style: italic;
-    font-size: 14px;
+QLabel#FelhasznaloBuborek {
+    background-color: #9fb1c9; /* hátteret állít be */
+    padding: 12px; /* belső margó minden oldalon */
+    border-radius: 12px; /* lekerekíti a buborék sarkait */
+
+    font-size: 16px; /* beállítja a betűméretet */
+    color: white; /* betűszín */
+    font-weight: bold; /* félkövér betűstílus */
+    font-style: italic; /* dőlt betűstílus */
+    padding-top: 10px; /* belső margó felül */
+    padding-bottom: 10px; /* belső margó alul */
 }
 
-/* Felhasználó chat buborékja*/
-QLabel#UserBubble {
-    background-color: #9fb1c9; 
-    padding: 12px; 
-    border-radius: 12px; 
-    font-size: 14px;
-
-    color: white;
-    font-weight: bold; 
-    font-size: 16px;
-    font-style: italic;
-    padding-top: 10px;
-    padding-bottom: 10px;
+QLabel#BotBuborek {
+    background-color: #ffffff; /* hátteret állít be */
+    padding: 12px; /* általános belső margó minden oldalon */
+    border-radius: 12px; /* lekerekíti a buborék sarkait */
+    border: 1px solid #cccccc; /* vékony, szürke keret a buborék körül */
+    
+    font-size: 16px; /* beállítja a betűméretet */
+    color: gray; /* betűszín */
+    font-weight: bold; /* félkövér betűstílus */
+    font-style: italic; /* dőlt betűstílus */
+    padding-top: 10px; /* belső margó felül */
+    padding-bottom: 10px; /* belső margó alul */
 }
 
-/* Bot chat buborékja*/
-QLabel#BotBubble {
-    background-color: #ffffff; 
-    padding: 12px; 
-    border-radius: 12px; 
-    border: 1px solid #cccccc;
+/* Kviz generator */
 
-    color: gray;
-    font-weight: bold; 
-    font-size: 16px;
-    font-style: italic;
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-/*Kvíz generálása*/
-
-QLabel#InfoLabel {
-    color: #49668C;
-    font-style: italic;
-    font-size: 14px;
+/* lenyíló menü doboza */
+QComboBox#PdfValaszto {
+    background-color: #F0F4F8; /* hátteret állít be */
+    color: #666666; /* betűszín */
+    font-size: 16px; /* beállítja a betűméretet */
+    font-style: italic; /* dőlt betűstílus */
+    padding: 6px 12px; /* belső margó: 6px alul/felül, 12px oldalt */
+    border: 1px solid #A9B8C9; /* 1 pixel vastag, folytonos szürkéskék keret */
+    border-radius: 6px; /* lekerekíti a doboz sarkait */
 }
 
-/* Fő gombok (Generálás és Kiértékelés) */
-QPushButton#GenerateButton {
-    padding: 10px; 
-    background-color: #49668C; 
-    color: white; 
-    font-weight: bold; 
-    font-size: 14px; 
-    border-radius: 5px;
-    border: none;
-}
-QPushButton#GenerateButton:hover { background-color: #9fb1c9; }
-QPushButton#GenerateButton:disabled { background-color: #7092BE; }
-
-QPushButton#SubmitButton {
-    padding: 12px; 
-    background-color: #7092BE;
-    color: white; 
-    font-weight: bold; 
-    font-size: 16px; 
-    border-radius: 5px; 
-    border: none;
-    margin-top: 10px;
-}
-QPushButton#SubmitButton:hover { background-color: #49668C; }
-QPushButton#SubmitButton:disabled { background-color: #a0c4e8; }
-
-QScrollArea#QuizScrollArea {
-    border: 1px solid #e4e4e4; 
-    background-color: #f5f5f5; 
-    border-radius: 5px;
-}
-QWidget#QuizContentWidget {
-    background-color: transparent;
+/* amikor a kruzor rajta van */
+QComboBox#PdfValaszto:hover {
+    background-color: #E6EDF5; /* hátteret állít be */
+    border: 1px solid #7092BE; /* a keret színe kékre vált */
 }
 
-QFrame#QuestionFrame {
-    background-color: white; 
-    border: 1px solid #ddd; 
-    border-radius: 8px; 
-    margin-bottom: 10px; 
-    padding: 15px;
+/* legördülő menüre kattintva megjelenő lista */
+QComboBox#PdfValaszto QAbstractItemView {
+    background-color: #ffffff; /* hátteret állít be */
+    color: #666666; /* betűszín */
+    font-size: 16px; /* beállítja a betűméretet */
+    font-style: italic; /* dőlt betűstílus */
+    selection-background-color: #7092BE; /* kijelölt elem háttérszíne a listában */
+    selection-color: white; /* kijelölt elem betűszíne a listában */
+    border: 1px solid #A9B8C9; /* lenyíló lista dobozának kerete */
+    border-radius: 4px; /* lekerekíti a lenyíló lista sarkait */
 }
 
-/* Kérdések szövege */
-QLabel#QuestionText {
-    font-size: 16px; 
-    border: none;
-    color: #333333;
+/* csúszka alap sávja (a háttérben lévő sín, amin a gomb mozog) */
+QSlider#KvizCsuszka::groove:horizontal {
+    border-radius: 4px; /* lekerekíti a sáv sarkait */
+    height: 8px; /* beállítja a sáv vastagságát */
+    background: #E6EDF5; /* hátteret állít be */
+}
+
+/* csúszka kitöltött része (a húzható gombtól balra eső terület) */
+QSlider#KvizCsuszka::sub-page:horizontal {
+    background: #7092BE; /* hátteret állít be */
+    border-radius: 4px; /* lekerekíti a sáv sarkait */
+}
+
+/* húzható rész a csúszkán */
+QSlider#KvizCsuszka::handle:horizontal {
+    background: #49668C; /* hátteret állít be */
+    width: 16px; /* a gomb szélessége */
+    height: 16px; /* a gomb magassága */
+    margin: -4px 0; /* függőlegesen középre igazítja a gombot a 8px vastag sínhez képest */
+    border-radius: 8px; /* teljesen kör alakúvá teszi a gombot (a 16px-es szélesség/magasság fele) */
+}
+
+/* amikor a kruzor rajta van */
+QSlider#KvizCsuszka::handle:horizontal:hover {
+    background: #7092BE; /* hátteret állít be */
+    border: 2px solid #49668C; /* keretet állít be*/
+}
+
+QSpinBox#CsuszkaErtekJelzo {
+    font-weight: bold; /* félkövér betűstílus */
+    font-size: 14px; /* beállítja a betűméretet */
+    color: #49668C; /* betűszín */
+    background-color: #ffffff; /* hátteret állít be */
+    border: 2px solid #7092BE; /* keretet állít be */
+    border-radius: 6px; /* lekerekíti a doboz sarkait */
+    padding: 2px 8px; /* belső margó: 2px alul/felül, 8px oldalt */
+    min-width: 25px; /* minimális szélességet állít be */
+}
+
+/* amikor a kruzor rajta van vagy ki van jelölve */
+QSpinBox#CsuszkaErtekJelzo:hover, QSpinBox#CsuszkaErtekJelzo:focus {
+    border: 2px solid #49668C; /* keretet állít be */
+    background-color: #F0F4F8; /* hátteret állít be */
+}
+
+QPushButton#GeneralasGomb {
+    padding: 10px; /* belső margó: 10px minden oldalon */
+    background-color: #49668C; /* hátteret állít be */
+    color: white; /* betűszín */
+    font-weight: bold; /* félkövér betűstílus */
+    font-size: 14px; /* beállítja a betűméretet */
+    border-radius: 5px; /* lekerekíti a gomb sarkait */
+    border: none; /* eltávolítja az alapértelmezett keretet */
+}
+
+/* amikor a kruzor rajta van */
+QPushButton#GeneralasGomb:hover { 
+    background-color: #9fb1c9; /* hátteret állít be */
+}
+
+/* amikor le van tiltva */
+QPushButton#GeneralasGomb:disabled { 
+    background-color: #7092BE; /* hátteret állít be */
+}
+
+QLabel#InfoCimke {
+    color: #49668C; /* betűszín */
+    font-style: italic; /* dőlt betűstílus */
+    font-size: 14px; /* beállítja a betűméretet */
+}
+
+QScrollArea#KvizGorgoTerulet {
+    border: 1px solid #e4e4e4; /* keretet állít be */
+    background-color: #f5f5f5; /* hátteret állít be */
+    border-radius: 5px; /* lekerekíti a doboz sarkait */
+}
+
+QLabel#EredmenyCimke {
+    font-size: 18px; /* beállítja a betűméretet */
+    font-weight: bold; /* félkövér betűstílus */
+}
+
+/* amikor az eredmény tökéletes */
+QLabel#EredmenyCimke[kategoria="tokeletes"] {
+    color: #5cb85c; /* betűszín */
+}
+
+/* amikor az eredmény közepes */
+QLabel#EredmenyCimke[kategoria="kozepes"] {
+    color: #f0ad4e; /* betűszín */
+}
+
+/* amikor az eredmény rossz */
+QLabel#EredmenyCimke[kategoria="rossz"] {
+    color: #d9534f; /* betűszín */
+}
+
+QWidget#KvizTartalomWidget {
+    background-color: transparent; /* átlátszó hátteret állít be */
+}
+
+/* Kviz widget */
+
+QFrame#KerdesKeret {
+    background-color: white; /* hátteret állít be */
+    border: 1px solid #ddd; /* keretet állít be */
+    border-radius: 8px; /* lekerekíti a doboz sarkait */
+    margin-bottom: 10px; /* külső margó a doboz alatt */
+    padding: 15px; /* belső margó: 15px minden oldalon */
+}
+
+QLabel#KerdesSzoveg {
+    font-size: 16px; /* beállítja a betűméretet */
+    border: none; /* eltávolítja az alapértelmezett keretet */
+    color: #333333; /* betűszín */
+}
+
+QLineEdit#RovidValaszMezo {
+    font-size: 14px; /* beállítja a betűméretet */
+    border: 1px solid #ccc; /* keretet állít be */
+    padding: 5px; /* belső margó: 5px minden oldalon */
+    border-radius: 4px; /* lekerekíti a doboz sarkait */
+}
+
+QComboBox#ParositoValaszto, QComboBox#SorrendezoValaszto {
+    font-size: 14px; /* beállítja a betűméretet */
+    padding: 5px; /* belső margó: 5px minden oldalon */
+    border: 1px solid #ccc; /* keretet állít be */
+    border-radius: 4px; /* lekerekíti a doboz sarkait */
 }
 
 QRadioButton, QCheckBox {
-    font-size: 14px; 
-    padding: 5px;
-}
-QLineEdit#ShortAnswerInput {
-    font-size: 14px; 
-    border: 1px solid #ccc; 
-    padding: 5px; 
-    border-radius: 4px;
-}
-QComboBox#MatchingCombo, QComboBox#OrderingCombo {
-    font-size: 14px; 
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    font-size: 14px; /* beállítja a betűméretet */
+    padding: 5px; /* belső margó: 5px minden oldalon */
 }
 
-*[feedback="correct"] {
-    color: green;
-    font-weight: bold;
-}
-*[feedback="wrong"] {
-    color: red;
-    font-weight: bold;
-    text-decoration: line-through; /* Áthúzás a rádiógomboknál/checkboxoknál */
+/* visszajelzes értéke "helyes" (helyes válasz) */
+*[visszajelzes="helyes"] {
+    color: green; /* betűszín */
+    font-weight: bold; /* félkövér betűstílus */
 }
 
-QLineEdit[feedback="correct"], QComboBox[feedback="correct"] {
-    border: 2px solid green; 
-    background-color: #e8f5e9;
-    color: black; /* Hogy a szöveg olvasható maradjon */
-    text-decoration: none;
-}
-QLineEdit[feedback="wrong"], QComboBox[feedback="wrong"] {
-    border: 2px solid red; 
-    background-color: #ffebee;
-    color: black;
-    text-decoration: none;
+/* visszajelzes értéke "hibas" (hibás válasz) */
+*[visszajelzes="hibas"] {
+    color: red; /* betűszín */
+    font-weight: bold; /* félkövér betűstílus */
+    text-decoration: line-through; /* áthúzza a szöveget */
 }
 
-/*pdf valaszto legordulo menu*/
-/*maga a doboz*/
-QComboBox#PdfSelector {
-    background-color: #F0F4F8;
-    color: #666666;
-    font-size: 16px;
-    font-style: italic;
-    padding: 6px 12px;
-    border: 1px solid #A9B8C9;
-    border-radius: 6px;
+/* beviteli mezők és legördülő menük helyes válasz esetén */
+QLineEdit[visszajelzes="helyes"], QComboBox[visszajelzes="helyes"] {
+    border: 2px solid green; /* keretet állít be */
+    background-color: #e8f5e9; /* hátteret állít be */
+    color: black; /* betűszín */
+    text-decoration: none; /* eltávolítja a szöveg áthúzását */
 }
 
-QComboBox#PdfSelector:hover {
-    background-color: #E6EDF5;
-    border: 1px solid #7092BE; 
+/* beviteli mezők és legördülő menük hibás válasz esetén */
+QLineEdit[visszajelzes="hibas"], QComboBox[visszajelzes="hibas"] {
+    border: 2px solid red; /* keretet állít be */
+    background-color: #ffebee; /* hátteret állít be */
+    color: black; /* betűszín */
+    text-decoration: none; /* eltávolítja a szöveg áthúzását */
 }
 
-/*a lenyilo lista*/
-QComboBox#PdfSelector QAbstractItemView {
-    background-color: #ffffff;
-    color: #666666;
-    font-size: 16px;
-    font-style: italic;
-    selection-background-color: #7092BE;
-    selection-color: white;
-    border: 1px solid #A9B8C9;
-    border-radius: 4px;
-    outline: none;
+/* jelölőnégyzetek és rádiógombok helyes válasz esetén */
+QCheckBox[visszajelzes="helyes"], QRadioButton[visszajelzes="helyes"] {
+    background-color: #d4edda; /* hátteret állít be */
+    border: 1px solid #28a745; /* keretet állít be */
 }
 
-QSlider#QuizSlider::groove:horizontal {
-    border-radius: 4px;
-    height: 8px; /* A sáv vastagsága */
-    background: #E6EDF5;
-}
-
-QSlider#QuizSlider::sub-page:horizontal {
-    background: #7092BE; 
-    border-radius: 4px;
-}
-
-QSlider#QuizSlider::handle:horizontal {
-    background: #49668C; 
-    width: 16px;
-    height: 16px;
-    margin: -4px 0;
-    border-radius: 8px; 
-}
-
-/* A gomb hover effektje */
-QSlider#QuizSlider::handle:horizontal:hover {
-    background: #7092BE;
-    border: 2px solid #49668C;
-}
-
-QSpinBox#SliderValueBadge {
-    font-weight: bold; 
-    font-size: 14px;
-    color: #49668C;
-    background-color: #ffffff;
-    border: 2px solid #7092BE;
-    border-radius: 6px;
-    padding: 2px 8px;
-    min-width: 25px; 
-}
-
-QSpinBox#SliderValueBadge:hover, QSpinBox#SliderValueBadge:focus {
-    border: 2px solid #49668C;
-    background-color: #F0F4F8;
-}
-
-
-QLabel#EredmenyCimke {
-    font-size: 18px;
-    font-weight: bold;
-}
-QLabel#EredmenyCimke[kategoria="tokeletes"] {
-    color: #5cb85c;
-}
-QLabel#EredmenyCimke[kategoria="kozepes"] {
-    color: #f0ad4e;
-}
-QLabel#EredmenyCimke[kategoria="rossz"] {
-    color: #d9534f;
-}
-
-QPushButton[feedback="correct"], QCheckBox[feedback="correct"], QRadioButton[feedback="correct"] {
-    background-color: #d4edda;
-    border: 1px solid #28a745;
-}
-QPushButton[feedback="wrong"], QCheckBox[feedback="wrong"], QRadioButton[feedback="wrong"] {
-    background-color: #f8d7da;
-    border: 1px solid #dc3545;
+/* jelölőnégyzetek és rádiógombok hibás válasz esetén */
+QCheckBox[visszajelzes="hibas"], QRadioButton[visszajelzes="hibas"] {
+    background-color: #f8d7da; /* hátteret állít be */
+    border: 1px solid #dc3545; /* keretet állít be */
 }
