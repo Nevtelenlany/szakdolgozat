@@ -5,3 +5,4 @@ google-genai
 python-dotenv==1.2.2
 PyMuPDF
 langchain_text_splitters==1.1.2
+pytest
