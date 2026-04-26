@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         def _ablak_tulajdonsagok_beallitasa(self) -> None:
             # setWindowTitle: beállítja az ablak címsorában megjelenő szöveget
-            self.setWindowTitle("Szakdolgozat - Tanulást támogató chatbot")
+            self.setWindowTitle("Tanulást támogató chatbot")
             # setMinimumSize: megakadályozza, hogy a felhasználó ennél (700x600 pixel) kisebbre méretezze át az ablakot
             self.setMinimumSize(700, 600)
             # showMaximized: az alkalmazás indításkor automatikusan kitölti a teljes képernyőt
