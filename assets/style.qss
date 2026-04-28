@@ -132,10 +132,6 @@ QTableWidget QWidget {
 
 /* Chatbot */ 
 
-QWidget#UzenetekWidget {
-    background-color: #f5f5f5; /* hátteret állít be */
-}
-
 QLineEdit#UzenetBeviteliMezo {
     padding: 10px; /* belső margó: 10 pixel távolságot hagy a keret és a begépelt szöveg között */
     border-radius: 15px; /* lekerekíti a szövegdoboz sarkait */
@@ -295,7 +291,6 @@ QLabel#InfoCimke {
 
 QScrollArea#KvizGorgoTerulet {
     border: 1px solid #e4e4e4; /* keretet állít be */
-    background-color: #f5f5f5; /* hátteret állít be */
     border-radius: 5px; /* lekerekíti a doboz sarkait */
 }
 
@@ -326,7 +321,6 @@ QWidget#KvizTartalomWidget {
 /* Kviz widget */
 
 QFrame#KerdesKeret {
-    background-color: white; /* hátteret állít be */
     border: 1px solid #ddd; /* keretet állít be */
     border-radius: 8px; /* lekerekíti a doboz sarkait */
     margin-bottom: 10px; /* külső margó a doboz alatt */
@@ -374,7 +368,6 @@ QRadioButton, QCheckBox {
 /* beviteli mezők és legördülő menük helyes válasz esetén */
 QLineEdit[visszajelzes="helyes"], QComboBox[visszajelzes="helyes"] {
     border: 2px solid green; /* keretet állít be */
-    background-color: #e8f5e9; /* hátteret állít be */
     color: black; /* betűszín */
     text-decoration: none; /* eltávolítja a szöveg áthúzását */
 }
@@ -382,14 +375,12 @@ QLineEdit[visszajelzes="helyes"], QComboBox[visszajelzes="helyes"] {
 /* beviteli mezők és legördülő menük hibás válasz esetén */
 QLineEdit[visszajelzes="hibas"], QComboBox[visszajelzes="hibas"] {
     border: 2px solid red; /* keretet állít be */
-    background-color: #ffebee; /* hátteret állít be */
     color: black; /* betűszín */
     text-decoration: none; /* eltávolítja a szöveg áthúzását */
 }
 
 /* jelölőnégyzetek és rádiógombok helyes válasz esetén */
 QCheckBox[visszajelzes="helyes"], QRadioButton[visszajelzes="helyes"] {
-    background-color: #d4edda; /* hátteret állít be */
     border: 1px solid #28a745; /* keretet állít be */
 }
 
